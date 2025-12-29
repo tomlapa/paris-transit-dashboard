@@ -8,8 +8,7 @@ let wizardState = {
     selectedLines: [],
     selectedDirections: {},
     nearbyStops: [],
-    availableLines: [],
-    advancedSearchResults: []
+    availableLines: []
 };
 
 // Initialize
@@ -49,13 +48,7 @@ function switchTab(tabName) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     
-    // Find the correct tab button
-    if (tabName === 'wizard') {
-        document.querySelector('.tab:first-child').classList.add('active');
-    } else if (tabName === 'advanced') {
-        document.querySelector('.tab:last-child').classList.add('active');
-    }
-    
+    event.target.classList.add('active');
     document.getElementById(`${tabName}-tab`).classList.add('active');
 }
 
@@ -650,35 +643,23 @@ async function advancedSearch() {
             `/api/search/stops?q=${encodeURIComponent(query)}`
         );
         const data = await response.json();
-        
-        if (data.error) {
-            container.innerHTML = `<div class="error-message">${escapeHtml(data.error)}</div>`;
-            return;
-        }
-        
         const results = data.results || [];
         
         if (results.length === 0) {
-            container.innerHTML = '<div class="info-message">Aucun résultat trouvé. Essayez avec un autre terme.</div>';
+            container.innerHTML = '<div class="info-message">Aucun résultat trouvé</div>';
             return;
         }
         
-        // Store results for selection
-        wizardState.advancedSearchResults = results;
-        
         container.innerHTML = `
-            <div class="info-message" style="margin-bottom: 15px;">
-                ✓ ${results.length} résultat(s) trouvé(s). Cliquez pour ajouter.
-            </div>
             <div class="selection-list">
                 ${results.map((result, index) => `
-                    <div class="selection-item" onclick="selectAdvancedResult(${index})">
+                    <div class="selection-item" onclick="selectAdvancedResult(${index}, ${JSON.stringify(result).replace(/"/g, '&quot;')})">
                         <div class="item-icon" style="background: ${getLineColor(result.transport_type)};">
                             ${getTransportIcon(result.transport_type)}
                         </div>
                         <div class="item-details">
                             <div class="item-name">${escapeHtml(result.stop_name)}</div>
-                            <div class="item-meta">${escapeHtml(result.line_name)} • ${escapeHtml(result.town || '')}</div>
+                            <div class="item-meta">${escapeHtml(result.line_name)} - ${escapeHtml(result.town || '')}</div>
                         </div>
                     </div>
                 `).join('')}
@@ -687,50 +668,13 @@ async function advancedSearch() {
         
     } catch (error) {
         console.error('Advanced search error:', error);
-        container.innerHTML = '<div class="error-message">Erreur lors de la recherche. Vérifiez votre connexion.</div>';
+        container.innerHTML = '<div class="error-message">Erreur lors de la recherche</div>';
     }
 }
 
-async function selectAdvancedResult(index) {
-    const result = wizardState.advancedSearchResults[index];
-    
-    if (!result) {
-        showError('Résultat introuvable');
-        return;
-    }
-    
-    // Set this as the selected stop
-    wizardState.selectedStop = {
-        stop_id: result.stop_id,
-        stop_id_raw: result.stop_id_raw,
-        stop_name: result.stop_name,
-        town: result.town || ''
-    };
-    
-    // Pre-select this line
-    wizardState.selectedLines = [{
-        route_id: result.line_id_raw,
-        line_name: result.line_name,
-        route_name: result.line_name,
-        mode: result.transport_type || 'Bus',
-        operator: 'IDFM'
-    }];
-    
-    // Reset directions
-    wizardState.selectedDirections = {};
-    
-    // Switch to wizard tab
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    document.querySelector('.tab:first-child').classList.add('active');
-    document.getElementById('wizard-tab').classList.add('active');
-    
-    // Show loading message
-    showSuccess(`Ajout de: ${result.line_name} à ${result.stop_name}`);
-    
-    // Jump to step 4 (directions)
-    goToStep(4);
-    
-    // Load directions for this line
-    await loadDirections();
+function selectAdvancedResult(index, result) {
+    // Advanced search found a specific line at a stop
+    // Add it directly
+    // TODO: Implement adding from advanced search results
+    showError('Fonctionnalité en cours de développement. Utilisez l\'assistant étape par étape.');
 }
