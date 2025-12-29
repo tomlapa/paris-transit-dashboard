@@ -21,6 +21,45 @@
             font-family: 'Inter', sans-serif;
             min-height: 100vh;
             padding: 0;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Floating doodles */
+        .doodle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 0;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        
+        .doodle-star {
+            top: 10%;
+            right: 10%;
+            font-size: 3rem;
+            animation-delay: 0s;
+        }
+        
+        .doodle-check {
+            top: 40%;
+            left: 8%;
+            font-size: 2.5rem;
+            color: #BFFF00;
+            animation-delay: 1.5s;
+        }
+        
+        .doodle-arrow {
+            bottom: 25%;
+            right: 12%;
+            font-size: 4rem;
+            color: #FF69B4;
+            animation-delay: 2.5s;
+            transform: rotate(15deg);
         }
         
         /* Brutalist Header */
@@ -30,6 +69,16 @@
             padding: 25px 30px;
             border-bottom: 8px solid #FFFF00;
             box-shadow: 0 8px 0 rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 10;
+        }
+        
+        .header-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
         .brutal-header h1 {
@@ -74,7 +123,9 @@
         .brutal-container {
             max-width: 1000px;
             margin: 0 auto;
-            padding: 30px;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 1;
         }
         
         /* Panel */
@@ -108,11 +159,11 @@
         
         .input-group label {
             display: block;
-            font-weight: bold;
+            font-weight: 700;
             margin-bottom: 10px;
             text-transform: uppercase;
             letter-spacing: 1px;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
         }
         
         .input-group input {
@@ -129,55 +180,51 @@
         
         .input-group input:focus {
             outline: none;
-            background: #FFFF00;
-            transform: translate(-2px, -2px);
-            box-shadow: 6px 6px 0 rgba(0,0,0,0.3);
+            border-color: #FFFF00;
+            box-shadow: 0 0 0 3px #FFFF00;
         }
         
         /* Buttons */
         .btn {
-            padding: 15px 35px;
-            border: 5px solid #000000;
+            padding: 15px 30px;
+            border: 3px solid #000000;
             background: #FFFFFF;
             color: #000000;
-            font-family: 'Inter', sans-serif;
-            font-size: 1.1rem;
-            font-weight: 900;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            font-weight: bold;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
             cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 5px 5px 0 rgba(0,0,0,0.3);
+            transition: all 0.1s;
         }
         
         .btn:hover {
-            background: #FF69B4;
-            transform: translate(-3px, -3px);
-            box-shadow: 8px 8px 0 rgba(0,0,0,0.4);
+            background: #000000;
+            color: #FFFFFF;
         }
         
         .btn:active {
-            transform: translate(0px, 0px);
-            box-shadow: 3px 3px 0 rgba(0,0,0,0.3);
+            transform: translate(2px, 2px);
         }
         
         .btn-primary {
-            background: #00D9FF;
+            background: #FFFF00;
             border-color: #000000;
         }
         
         .btn-primary:hover {
-            background: #FFFF00;
-            color: #000000;
+            background: #000000;
+            color: #FFFF00;
         }
         
         .btn-success {
-            background: #BFFF00;
+            background: #00FF00;
         }
         
         .btn-success:hover {
-            background: #FFFF00;
-            color: #000000;
+            background: #000000;
+            color: #00FF00;
         }
         
         .btn-danger {
@@ -438,13 +485,8 @@
 </head>
 <body>
     <div class="brutal-header">
-        <div style="max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <h1>⚙ CONFIGURATION</h1>
-                <div class="subtitle">TRANSIT DASHBOARD</div>
-            </div>
-            <a href="/" class="btn-dashboard">→ VOIR LE DASHBOARD</a>
-        </div>
+        <h1>🚇 TRANSIT</h1>
+        <div class="subtitle">CONFIGURATION DU SYSTÈME</div>
     </div>
 
     <div class="brutal-container">
