@@ -523,12 +523,12 @@
                 
                 const result = await response.json();
                 
-                if (result.valid) {
+                if (result.success) {
                     showAlert('apikey-alerts', '✓ Clé API valide !', 'success');
                     currentConfig = {api_key: apikey, stops: []};
                     setTimeout(() => showStep('stops'), 1000);
                 } else {
-                    showAlert('apikey-alerts', '✗ Clé API invalide', 'error');
+                    showAlert('apikey-alerts', '✗ ' + (result.message || 'Clé API invalide'), 'error');
                 }
             } catch (e) {
                 showAlert('apikey-alerts', '✗ Erreur de validation', 'error');
