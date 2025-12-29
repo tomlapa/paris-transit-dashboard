@@ -157,12 +157,16 @@ async function searchAddress() {
         // Clear previous markers
         clearMapMarkers();
         
-        // Geocode address
+        // Geocode address - add "Île-de-France" to improve Paris region results
         const geoController = new AbortController();
         const geoTimeout = setTimeout(() => geoController.abort(), 10000);
         
+        const searchQuery = address.includes('Paris') || address.includes('Île-de-France') 
+            ? address 
+            : `${address}, Île-de-France`;
+        
         const geoResponse = await fetch(
-            `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(address)}`,
+            `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(searchQuery)}`,
             { signal: geoController.signal }
         );
         clearTimeout(geoTimeout);
@@ -170,13 +174,49 @@ async function searchAddress() {
         const geoData = await geoResponse.json();
         
         if (!geoData.features || geoData.features.length === 0) {
-            container.innerHTML = '<div class="error-message">Adresse non trouvée. Vérifiez l\'orthographe.</div>';
+            container.innerHTML = `
+                <div class="error-message">
+                    <strong>Adresse non trouvée</strong><br>
+                    Essayez avec plus de détails (ex: "10 Rue de Rivoli, Paris" ou "Saint-Maurice 94410")<br><br>
+                    Ou utilisez l'onglet "Recherche Avancée" pour chercher directement par nom d'arrêt.
+                </div>
+            `;
             return;
         }
         
-        const coords = geoData.features[0].geometry.coordinates;
+        // Filter results to only show Île-de-France region (departments 75, 77, 78, 91, 92, 93, 94, 95)
+        const idfDepartments = ['75', '77', '78', '91', '92', '93', '94', '95'];
+        const idfResults = geoData.features.filter(feature => {
+            const postcode = feature.properties.postcode || '';
+            const dept = postcode.substring(0, 2);
+            return idfDepartments.includes(dept);
+        });
+        
+        // Use filtered results if available, otherwise use all results
+        const results = idfResults.length > 0 ? idfResults : geoData.features;
+        
+        if (results.length === 0) {
+            container.innerHTML = `
+                <div class="error-message">
+                    <strong>Aucune adresse trouvée en Île-de-France</strong><br>
+                    Essayez avec le code postal (ex: "Saint-Maurice 94410")<br><br>
+                    Ou utilisez l'onglet "Recherche Avancée".
+                </div>
+            `;
+            return;
+        }
+        
+        const coords = results[0].geometry.coordinates;
         const lat = coords[1];
         const lon = coords[0];
+        const foundAddress = results[0].properties.label;
+        
+        // Show which address was found
+        container.innerHTML = `
+            <div class="info-message">
+                📍 Adresse trouvée: <strong>${escapeHtml(foundAddress)}</strong>
+            </div>
+        `;
         
         // Update map
         map.setView([lat, lon], 16);
@@ -202,7 +242,13 @@ async function searchAddress() {
         wizardState.nearbyStops = stopsData.results || [];
         
         if (wizardState.nearbyStops.length === 0) {
-            container.innerHTML = '<div class="info-message">Aucun arrêt trouvé dans un rayon de 500m. Essayez une autre adresse ou utilisez la recherche avancée.</div>';
+            container.innerHTML = `
+                <div class="info-message">
+                    📍 Adresse trouvée: <strong>${escapeHtml(foundAddress)}</strong><br><br>
+                    ⚠️ Aucun arrêt trouvé dans un rayon de 500m.<br>
+                    Essayez une autre adresse ou utilisez la "Recherche Avancée" pour chercher par nom d'arrêt.
+                </div>
+            `;
             return;
         }
         
@@ -216,7 +262,11 @@ async function searchAddress() {
             mapMarkers.push(marker);
         });
         
-        container.innerHTML = '<div class="success-message">✓ ' + wizardState.nearbyStops.length + ' arrêts trouvés</div>';
+        container.innerHTML = `
+            <div class="success-message">
+                ✓ ${wizardState.nearbyStops.length} arrêt(s) trouvé(s) près de: <strong>${escapeHtml(foundAddress)}</strong>
+            </div>
+        `;
         
         // Auto-advance to step 2
         setTimeout(() => goToStep(2), 500);
@@ -224,9 +274,21 @@ async function searchAddress() {
     } catch (error) {
         console.error('Search error:', error);
         if (error.name === 'AbortError') {
-            container.innerHTML = '<div class="error-message">Recherche expirée. Vérifiez votre connexion et réessayez.</div>';
+            container.innerHTML = `
+                <div class="error-message">
+                    <strong>Recherche expirée</strong><br>
+                    Vérifiez votre connexion et réessayez.<br><br>
+                    Ou utilisez l'onglet "Recherche Avancée".
+                </div>
+            `;
         } else {
-            container.innerHTML = '<div class="error-message">Erreur lors de la recherche. Réessayez ou utilisez la recherche avancée.</div>';
+            container.innerHTML = `
+                <div class="error-message">
+                    <strong>Erreur lors de la recherche</strong><br>
+                    ${escapeHtml(error.message)}<br><br>
+                    Essayez l'onglet "Recherche Avancée" pour chercher directement par nom d'arrêt.
+                </div>
+            `;
         }
     }
 }
