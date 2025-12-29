@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="300">
+    <title>Transit Dashboard - Paris</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚇</text></svg>">
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <div class="status-indicator">
+                <span id="status" class="status-dot"></span>
+                <span id="status-text" class="status-text">EN DIRECT</span>
+            </div>
+        </div>
+        <div class="header-center">
+            <h1>PROCHAINS PASSAGES</h1>
+        </div>
+        <div class="header-right">
+            <div id="clock" class="clock">--:--:--</div>
+            <a href="/admin" class="admin-link" title="Administration">⚙️</a>
+        </div>
+    </header>
+
+    <main id="departures-container" class="departures-container">
+        <div class="loading">Chargement des données...</div>
+    </main>
+
+    <div id="cached-indicator" class="cached-indicator" style="display: none;">
+        DONNÉES EN CACHE
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
