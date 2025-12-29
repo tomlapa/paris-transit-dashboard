@@ -227,25 +227,22 @@ async def validate_api_key(request: Request):
         if not api_key:
             return {"success": False, "message": "Clé API vide"}
         
+        if len(api_key) < 20:
+            return {"success": False, "message": "Clé API trop courte (doit faire au moins 20 caractères)"}
+        
         # Save key immediately
         config_manager.api_key = api_key
         config_manager.save_config()
         
-        # Create client and test
+        # Create client (will be tested when fetching real data)
         idfm_client = IDFMClient(api_key)
-        result = await idfm_client.test_connection()
         
-        # If rate limited, just accept the key anyway
-        if "rate limit" in result.get("message", "").lower():
-            print("[INFO] Rate limited during validation, accepting key anyway")
-            result = {"success": True, "message": "Clé API acceptée (rate limit atteint, sera testée plus tard)"}
-        
-        if result["success"]:
-            # Start background task if not running
+        # Start background task if not running and stops are configured
+        if config_manager.stops:
             if background_task is None or background_task.done():
                 background_task = asyncio.create_task(fetch_all_stops())
         
-        return result
+        return {"success": True, "message": "Clé API enregistrée ✓ (sera testée lors de la récupération des données)"}
         
     except Exception as e:
         return {"success": False, "message": f"Erreur: {str(e)}"}
