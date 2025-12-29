@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configuration - Transit Dashboard</title>
     <link rel="stylesheet" href="/static/style.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
-          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
-          crossorigin=""/>
     
     <style>
         body {
@@ -16,7 +13,7 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             padding: 20px;
             margin: 0 auto;
-            max-width: 1400px;
+            max-width: 900px;
         }
         
         .setup-header {
@@ -30,125 +27,11 @@
             margin: 0;
         }
         
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #3a3a5c;
-        }
-        
-        .tab {
-            padding: 12px 24px;
-            background: transparent;
-            border: none;
-            color: #888;
-            cursor: pointer;
-            font-size: 1rem;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s;
-        }
-        
-        .tab:hover {
-            color: #f68b1e;
-        }
-        
-        .tab.active {
-            color: #f68b1e;
-            border-bottom-color: #f68b1e;
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        /* Progress Indicator */
-        .progress-indicator {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 30px;
-            padding: 0 20px;
-        }
-        
-        .progress-step {
-            flex: 1;
-            text-align: center;
-            position: relative;
-        }
-        
-        .progress-step::before {
-            content: '';
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            right: -50%;
-            height: 2px;
-            background: #3a3a5c;
-            z-index: 0;
-        }
-        
-        .progress-step:last-child::before {
-            display: none;
-        }
-        
-        .progress-step.active::before {
-            background: #f68b1e;
-        }
-        
-        .progress-circle {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #252542;
-            border: 2px solid #3a3a5c;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            position: relative;
-            z-index: 1;
-            margin-bottom: 8px;
-        }
-        
-        .progress-step.active .progress-circle {
-            background: #f68b1e;
-            border-color: #f68b1e;
-            color: #000;
-        }
-        
-        .progress-step.completed .progress-circle {
-            background: #4caf50;
-            border-color: #4caf50;
-            color: #fff;
-        }
-        
-        .progress-label {
-            font-size: 0.85rem;
-            color: #888;
-        }
-        
-        .progress-step.active .progress-label {
-            color: #f68b1e;
-            font-weight: 600;
-        }
-        
-        /* Step Container */
         .step-container {
             background: #252542;
             border-radius: 12px;
             padding: 30px;
             margin-bottom: 20px;
-        }
-        
-        .step-content {
-            display: none;
-        }
-        
-        .step-content.active {
-            display: block;
         }
         
         .step-title {
@@ -157,7 +40,7 @@
             color: #f68b1e;
         }
         
-        /* Form Elements */
+        /* Search Box */
         .search-box {
             position: relative;
             margin-bottom: 20px;
@@ -199,7 +82,7 @@
         
         /* Selection Lists */
         .selection-list {
-            max-height: 400px;
+            max-height: 500px;
             overflow-y: auto;
             margin: 20px 0;
         }
@@ -225,13 +108,6 @@
         .selection-item.selected {
             border-color: #f68b1e;
             background: #2a2a4a;
-        }
-        
-        .selection-item input[type="radio"],
-        .selection-item input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
         }
         
         .item-icon {
@@ -335,7 +211,7 @@
             margin-top: 20px;
         }
         
-        /* Info Messages */
+        /* Messages */
         .info-message {
             padding: 15px;
             background: #2a2a4a;
@@ -360,19 +236,6 @@
             border-radius: 6px;
             margin: 15px 0;
             color: #ccffcc;
-        }
-        
-        /* Map Container */
-        .map-container {
-            height: 400px;
-            border-radius: 8px;
-            overflow: hidden;
-            margin: 20px 0;
-        }
-        
-        #map {
-            height: 100%;
-            width: 100%;
         }
         
         /* Loading Spinner */
@@ -435,7 +298,7 @@
         <h3>Clé API IDFM</h3>
         <div class="form-group">
             <div style="position: relative;">
-                <input type="text" id="api-key" placeholder="Votre clé API" value="" style="padding-right: 120px;">
+                <input type="text" id="api-key" placeholder="Votre clé API" value="" style="padding-right: 120px; width: 100%; padding: 12px; border: 2px solid #3a3a5c; border-radius: 8px; background: #1a1a2e; color: #fff; font-size: 1rem; box-sizing: border-box;">
                 <button class="btn btn-secondary" onclick="toggleApiKeyVisibility()" 
                         style="position: absolute; right: 5px; top: 5px; padding: 8px 12px; font-size: 0.85rem;"
                         id="toggle-visibility-btn"
@@ -454,117 +317,31 @@
         </p>
     </div>
 
-    <!-- Tabs -->
-    <div class="tabs">
-        <button class="tab active" onclick="switchTab('wizard')">
-            🧭 Assistant Étape par Étape
-        </button>
-        <button class="tab" onclick="switchTab('advanced')">
-            🚀 Recherche Avancée
-        </button>
+    <!-- Main Search Section -->
+    <div class="step-container">
+        <h2 class="step-title">🔍 Rechercher un arrêt ou une ligne</h2>
+        <div class="info-message">
+            Recherchez par nom d'arrêt, nom de ligne, ou numéro<br>
+            <strong>Exemples:</strong> "Écoles de Gravelle", "RER A", "Bus 111", "Joinville"
+        </div>
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="Ex: Écoles de Gravelle, RER A, Bus 111...">
+            <button onclick="searchStops()">Chercher</button>
+        </div>
+        <div id="search-results"></div>
     </div>
 
-    <!-- Tab Content: Wizard -->
-    <div id="wizard-tab" class="tab-content active">
-        <!-- Progress Indicator -->
-        <div class="progress-indicator">
-            <div class="progress-step active" data-step="1">
-                <div class="progress-circle">1</div>
-                <div class="progress-label">Adresse</div>
-            </div>
-            <div class="progress-step" data-step="2">
-                <div class="progress-circle">2</div>
-                <div class="progress-label">Arrêt</div>
-            </div>
-            <div class="progress-step" data-step="3">
-                <div class="progress-circle">3</div>
-                <div class="progress-label">Lignes</div>
-            </div>
-            <div class="progress-step" data-step="4">
-                <div class="progress-circle">4</div>
-                <div class="progress-label">Directions</div>
-            </div>
-        </div>
-
-        <!-- Step Container -->
-        <div class="step-container">
-            <!-- Step 1: Search Address -->
-            <div class="step-content active" id="step-1">
-                <h2 class="step-title">Étape 1 : Rechercher une adresse</h2>
-                <div class="info-message">
-                    💡 <strong>Conseil:</strong> Soyez précis pour de meilleurs résultats<br>
-                    Exemples: "10 Rue de Rivoli, Paris", "Saint-Maurice 94410", "Gare de Lyon"
-                </div>
-                <div class="search-box">
-                    <input type="text" id="address-search" placeholder="Ex: 260 Rue du Maréchal Leclerc, Saint-Maurice 94410">
-                    <button onclick="searchAddress()">Chercher</button>
-                </div>
-                <div class="map-container">
-                    <div id="map"></div>
-                </div>
-                <div id="nearby-stops-container"></div>
-            </div>
-
-            <!-- Step 2: Select Stop -->
-            <div class="step-content" id="step-2">
-                <h2 class="step-title">Étape 2 : Choisir un arrêt</h2>
-                <div class="info-message">
-                    Sélectionnez l'arrêt où vous souhaitez suivre les transports
-                </div>
-                <div class="selection-list" id="stops-list"></div>
-                <div class="button-group">
-                    <button class="btn btn-secondary" onclick="goToStep(1)">← Retour</button>
-                    <button class="btn btn-primary" id="step2-continue" disabled onclick="goToStep(3)">Continuer →</button>
-                </div>
-            </div>
-
-            <!-- Step 3: Select Lines -->
-            <div class="step-content" id="step-3">
-                <h2 class="step-title">Étape 3 : Choisir les lignes</h2>
-                <div class="info-message">
-                    Sélectionnez une ou plusieurs lignes à suivre
-                </div>
-                <div class="selection-list" id="lines-list"></div>
-                <div class="button-group">
-                    <button class="btn btn-secondary" onclick="goToStep(2)">← Retour</button>
-                    <button class="btn btn-primary" id="step3-continue" disabled onclick="goToStep(4)">Continuer →</button>
-                </div>
-            </div>
-
-            <!-- Step 4: Select Directions -->
-            <div class="step-content" id="step-4">
-                <h2 class="step-title">Étape 4 : Choisir les directions</h2>
-                <div class="info-message">
-                    Sélectionnez la direction pour chaque ligne
-                </div>
-                <div id="directions-container"></div>
-                <div class="button-group">
-                    <button class="btn btn-secondary" onclick="goToStep(3)">← Retour</button>
-                    <button class="btn btn-primary" onclick="addToConfig()">Ajouter au Dashboard</button>
-                    <button class="btn btn-secondary" onclick="goToStep(3)">Ajouter d'autres lignes</button>
-                </div>
-            </div>
+    <!-- Direction Selection (Hidden initially) -->
+    <div class="step-container" id="direction-selection-container" style="display: none;">
+        <h2 class="step-title">Sélectionner la direction</h2>
+        <div id="selected-stop-info"></div>
+        <div id="directions-container"></div>
+        <div class="button-group">
+            <button class="btn btn-secondary" onclick="backToSearch()">← Nouvelle recherche</button>
+            <button class="btn btn-primary" onclick="addToConfig()">Ajouter au Dashboard</button>
         </div>
     </div>
 
-    <!-- Tab Content: Advanced -->
-    <div id="advanced-tab" class="tab-content">
-        <div class="step-container">
-            <h2 class="step-title">Recherche Avancée</h2>
-            <div class="info-message">
-                Pour utilisateurs avancés : recherchez directement par nom de ligne ou d'arrêt
-            </div>
-            <div class="search-box">
-                <input type="text" id="advanced-search" placeholder="Ex: RER A, Bus 111, Joinville">
-                <button onclick="advancedSearch()">Chercher</button>
-            </div>
-            <div id="advanced-results"></div>
-        </div>
-    </div>
-
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
-            integrity="sha384-+Hgd6j9fYKwJfDqxaeHQfIf8Z4V+bZ0KDnf/4x4cYOXGGgPDmvDmFmYRJXdcYbV/" 
-            crossorigin=""></script>
     <script src="/static/setup-wizard.js"></script>
 </body>
 </html>
