@@ -664,7 +664,10 @@
                 const data = await res.json();
                 const directions = data.directions || [];
 
+                console.log('Directions received:', directions);
+
                 if (directions.length > 0) {
+                    // Has real-time directions
                     container.innerHTML = directions.map((d, i) => `
                         <div class="direction-option" onclick="selectDirection('${escapeHtml(d.direction)}', this)">
                             <input type="radio" name="direction" value="${i}">
@@ -672,20 +675,41 @@
                         </div>
                     `).join('');
                 } else {
-                    // No real-time directions - use line name as default direction
-                    state.selectedDirection = result.line_name || 'Direction par défaut';
+                    // No real-time directions - auto-select line name as direction
+                    const defaultDirection = result.line_name || 'Direction inconnue';
+                    state.selectedDirection = defaultDirection;
+                    
+                    console.log('No directions found, using default:', defaultDirection);
+                    
                     container.innerHTML = `
-                        <div class="info-box">
-                            Aucune direction en temps réel disponible.<br>
-                            <strong>Direction par défaut:</strong> ${escapeHtml(state.selectedDirection)}<br><br>
-                            Vous pouvez ajouter la ligne maintenant.
+                        <div class="direction-option selected" style="cursor: default;">
+                            <input type="radio" name="direction" checked disabled>
+                            <span>→ ${escapeHtml(defaultDirection)} (par défaut)</span>
+                        </div>
+                        <div class="info-box" style="margin-top: 15px;">
+                            ℹ️ Aucune direction en temps réel disponible.<br>
+                            La ligne sera ajoutée avec cette direction par défaut.<br>
+                            <strong>Vous pouvez ajouter la ligne maintenant.</strong>
                         </div>
                     `;
-                    console.log('Direction set to:', state.selectedDirection);
                 }
             } catch (e) {
                 console.error('Direction error:', e);
-                container.innerHTML = '<div class="info-box" style="background: linear-gradient(145deg, #f44336, #d32f2f);">Erreur de chargement des directions</div>';
+                
+                // On error, also set a default
+                const defaultDirection = result.line_name || 'Direction par défaut';
+                state.selectedDirection = defaultDirection;
+                
+                container.innerHTML = `
+                    <div class="direction-option selected" style="cursor: default;">
+                        <input type="radio" name="direction" checked disabled>
+                        <span>→ ${escapeHtml(defaultDirection)}</span>
+                    </div>
+                    <div class="info-box" style="background: linear-gradient(145deg, #ff9800, #f57c00); margin-top: 15px;">
+                        ⚠️ Impossible de charger les directions.<br>
+                        Direction par défaut définie : <strong>${escapeHtml(defaultDirection)}</strong>
+                    </div>
+                `;
             }
         }
 
@@ -714,31 +738,36 @@
             }
 
             try {
-                const getRes = await fetch('/api/config');
-                const config = await getRes.json();
+                // Prepare form data for /api/stops/add endpoint
+                const formData = new FormData();
+                formData.append('stop_id', state.selectedStop.stop_id);
+                formData.append('stop_name', state.selectedStop.stop_name);
+                formData.append('line', state.selectedLine.line_name);
+                formData.append('direction', state.selectedDirection);
+                formData.append('transport_type', state.selectedLine.mode || 'Bus');
+                
+                // Add line_id if available (route_id)
+                if (state.selectedLine.route_id) {
+                    formData.append('line_id', state.selectedLine.route_id);
+                }
 
-                const newStop = {
+                console.log('Sending to /api/stops/add:', {
                     stop_id: state.selectedStop.stop_id,
                     stop_name: state.selectedStop.stop_name,
                     line: state.selectedLine.line_name,
                     direction: state.selectedDirection,
-                    route_id: state.selectedLine.route_id
-                };
-
-                console.log('Adding stop:', newStop);
-
-                const allStops = [...(config.stops || []), newStop];
-
-                const saveRes = await fetch('/api/config', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        api_key: config.api_key,
-                        stops: allStops
-                    })
+                    transport_type: state.selectedLine.mode,
+                    line_id: state.selectedLine.route_id
                 });
 
-                if (saveRes.ok) {
+                const saveRes = await fetch('/api/stops/add', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await saveRes.json();
+
+                if (saveRes.ok && result.success) {
                     showToast('Ligne ajoutée avec succès!', 'success');
                     setTimeout(() => {
                         if (confirm('Ligne ajoutée! Voulez-vous en ajouter une autre?')) {
@@ -748,9 +777,8 @@
                         }
                     }, 1000);
                 } else {
-                    const errorData = await saveRes.text();
-                    console.error('Save failed:', saveRes.status, errorData);
-                    showToast('Erreur lors de l\'enregistrement', 'error');
+                    console.error('Save failed:', result);
+                    showToast(result.message || 'Erreur lors de l\'enregistrement', 'error');
                 }
             } catch (e) {
                 console.error('Save error:', e);
