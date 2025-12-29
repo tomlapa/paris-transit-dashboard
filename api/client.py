@@ -36,7 +36,7 @@ class IDFMClient:
     """
     Client for IDFM APIs:
     - PRIM API (with apikey): Real-time departures via stop-monitoring
-    - Open Data API (no auth): Stop and line search
+    - Local search index: Pre-built from real-time data perimeter CSV
     - French Address API (no auth): Geocoding addresses
     """
     
@@ -46,8 +46,18 @@ class IDFMClient:
             "apikey": api_key,
             "Accept": "application/json"
         }
-        # Cache for stops data
-        self._stops_cache: List[Dict] = []
+        # Load local search index
+        self._search_index = self._load_search_index()
+    
+    def _load_search_index(self) -> Dict:
+        """Load pre-built search index from JSON"""
+        try:
+            index_path = os.path.join(os.path.dirname(__file__), '../data/search_index.json')
+            with open(index_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Warning: Could not load search index: {e}")
+            return {"stops": {}, "search_terms": {}}
         self._cache_time: Optional[datetime] = None
     
     def _get_paris_time(self) -> datetime:
@@ -249,57 +259,60 @@ class IDFMClient:
     # ==================== STOP SEARCH (legacy) ====================
     
     async def search_stops(self, query: str, transport_type: str = None) -> List[SearchResult]:
-        """Search stops by name using IDFM Open Data API"""
+        """Search stops using local index (built from real-time data perimeter)"""
         results = []
         
-        try:
-            async with httpx.AsyncClient(timeout=15) as client:
-                url = f"{OPENDATA_URL}/arrets-lignes/records"
+        if not query or len(query) < 2:
+            return results
+        
+        query_lower = query.lower().strip()
+        matched_stops = set()
+        
+        # Search through index terms
+        for term, stop_ids in self._search_index["search_terms"].items():
+            if query_lower in term:
+                matched_stops.update(stop_ids)
+        
+        # Build results from matched stops
+        seen = set()
+        for stop_id in matched_stops:
+            stop_data = self._search_index["stops"].get(stop_id)
+            if not stop_data:
+                continue
+            
+            stop_name = stop_data["name"]
+            
+            # Create one result per line at this stop
+            for line in stop_data["lines"]:
+                line_id = line["line_id"]
+                line_name = line["line_name"]
+                t_type = line["transport_type"]
                 
-                params = {
-                    "where": f"search(stop_name, '{query}')",
-                    "limit": 50,
-                    "select": "stop_id,stop_name,route_long_name,shortname,mode,id,nom_commune"
-                }
+                # Filter by transport type if specified
+                if transport_type and t_type != transport_type:
+                    continue
                 
-                response = await client.get(url, params=params)
+                # Deduplicate
+                key = f"{stop_id}:{line_name}"
+                if key in seen:
+                    continue
+                seen.add(key)
                 
-                if response.status_code == 200:
-                    data = response.json()
-                    records = data.get("results", [])
-                    
-                    seen = set()
-                    for record in records:
-                        stop_id_raw = record.get("stop_id", "")
-                        stop_name = record.get("stop_name", "")
-                        line_name = record.get("shortname") or record.get("route_long_name", "")
-                        mode = record.get("mode", "Bus")
-                        line_id_raw = record.get("id", "")
-                        town = record.get("nom_commune", "")
-                        
-                        stop_id = self._convert_stop_id(stop_id_raw)
-                        line_id = self._convert_line_id_from_opendata(line_id_raw)
-                        t_type = self._mode_name_to_transport(mode)
-                        
-                        if transport_type and t_type != transport_type:
-                            continue
-                        
-                        key = f"{stop_id}:{line_name}"
-                        if key in seen:
-                            continue
-                        seen.add(key)
-                        
-                        results.append(SearchResult(
-                            stop_id=stop_id,
-                            stop_name=stop_name,
-                            line_id=line_id,
-                            line_name=line_name,
-                            direction="",
-                            transport_type=t_type,
-                            town=town
-                        ))
-        except Exception as e:
-            print(f"Search error: {e}")
+                results.append(SearchResult(
+                    stop_id=stop_id,
+                    stop_name=stop_name,
+                    line_id=line_id,
+                    line_name=line_name,
+                    direction="",
+                    transport_type=t_type,
+                    town=""  # Town info not in perimeter CSV
+                ))
+        
+        # Sort by relevance (exact matches first, then by stop name)
+        results.sort(key=lambda r: (
+            0 if query_lower == r.stop_name.lower() else 1,
+            r.stop_name.lower()
+        ))
         
         return results[:30]
     
@@ -359,6 +372,20 @@ class IDFMClient:
         """Get real-time departures using PRIM stop-monitoring API"""
         now = self._get_paris_time()
         
+        # PRIM doesn't support RER/Transilien real-time data
+        if stop_config.transport_type and stop_config.transport_type.lower() in ['rer', 'train', 'rail']:
+            return StopDepartures(
+                stop_id=stop_config.id, stop_name=stop_config.name,
+                line=stop_config.line, line_id=stop_config.line_id,
+                direction=stop_config.direction, last_updated=now,
+                departures=[], 
+                error="Les horaires temps réel des trains ne sont pas disponibles via PRIM. Consultez l'application SNCF ou Île-de-France Mobilités."
+            )
+        
+        print(f"[DEBUG] Getting departures for: {stop_config.line} at {stop_config.name}")
+        print(f"[DEBUG] Stop ID: {stop_config.id}, Line ID: {stop_config.line_id}")
+        print(f"[DEBUG] Direction filter: {stop_config.direction}")
+        
         try:
             async with httpx.AsyncClient(timeout=15) as client:
                 url = f"{PRIM_BASE_URL}/stop-monitoring"
@@ -367,7 +394,9 @@ class IDFMClient:
                 if stop_config.line_id:
                     params["LineRef"] = stop_config.line_id
                 
+                print(f"[DEBUG] API Request: {url} with params: {params}")
                 response = await client.get(url, headers=self.prim_headers, params=params)
+                print(f"[DEBUG] Response status: {response.status_code}")
                 
                 if response.status_code == 400:
                     return StopDepartures(
@@ -386,6 +415,8 @@ class IDFMClient:
                 
                 data = response.json()
                 departures = self._parse_departures(data, stop_config)
+                
+                print(f"[DEBUG] Parsed {len(departures)} departures")
                 
                 return StopDepartures(
                     stop_id=stop_config.id, stop_name=stop_config.name,
@@ -412,9 +443,11 @@ class IDFMClient:
         try:
             delivery = data.get("Siri", {}).get("ServiceDelivery", {}).get("StopMonitoringDelivery", [])
             if not delivery:
+                print(f"[DEBUG] No StopMonitoringDelivery in response")
                 return departures
             
             visits = delivery[0].get("MonitoredStopVisit", [])
+            print(f"[DEBUG] Found {len(visits)} monitored visits")
             
             for visit in visits:
                 journey = visit.get("MonitoredVehicleJourney", {})
@@ -426,15 +459,19 @@ class IDFMClient:
                 dest_names = journey.get("DestinationName", [])
                 direction = dest_names[0].get("value", "") if dest_names else ""
                 
+                print(f"[DEBUG] Visit: line={line_name}, direction={direction}")
+                
                 # Filter by direction if specified (skip if "Toutes directions")
                 if stop_config.direction and "toutes directions" not in stop_config.direction.lower():
                     if not self._direction_matches(stop_config.direction, direction):
+                        print(f"[DEBUG] Filtered out: {direction} doesn't match {stop_config.direction}")
                         continue
                 
                 aimed_time = call.get("AimedDepartureTime") or call.get("AimedArrivalTime", "")
                 expected_time = call.get("ExpectedDepartureTime") or call.get("ExpectedArrivalTime", "")
                 
                 if not aimed_time and not expected_time:
+                    print(f"[DEBUG] No time data for this visit")
                     continue
                 
                 scheduled = self._parse_idfm_time(aimed_time or expected_time)

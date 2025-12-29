@@ -3,130 +3,390 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Administration - Transit Dashboard</title>
-    <link rel="stylesheet" href="/static/admin.css">
+    <title>PARAMÈTRES - TRANSIT</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #FFFFFF;
+            color: #000000;
+            font-family: 'Arial Black', 'Arial Bold', sans-serif;
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        .brutal-header {
+            background: #000000;
+            color: #FFFFFF;
+            padding: 30px;
+            border-bottom: 8px solid #FF69B4;
+        }
+        
+        .brutal-header h1 {
+            font-size: 2.5rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+        
+        /* Container */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        /* Panel */
+        .panel {
+            background: #FFFFFF;
+            border: 6px solid #000000;
+            margin-bottom: 30px;
+        }
+        
+        .panel-header {
+            background: #FFFF00;
+            padding: 20px;
+            border-bottom: 5px solid #000000;
+            font-size: 1.3rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .panel-body {
+            padding: 30px;
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 15px 30px;
+            border: 4px solid #000000;
+            background: #FFFFFF;
+            color: #000000;
+            font-family: 'Arial Black', sans-serif;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.1s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            background: #000000;
+            color: #FFFFFF;
+            transform: translate(-3px, -3px);
+            box-shadow: 3px 3px 0 #FF69B4;
+        }
+        
+        .btn-primary {
+            background: #FFFF00;
+        }
+        
+        .btn-primary:hover {
+            background: #000000;
+            color: #FFFF00;
+        }
+        
+        .btn-danger {
+            background: #FF69B4;
+        }
+        
+        .btn-danger:hover {
+            background: #FF0000;
+            color: #FFFFFF;
+        }
+        
+        .btn-success {
+            background: #00FF00;
+        }
+        
+        .btn-back {
+            background: #EEEEEE;
+            margin-bottom: 20px;
+        }
+        
+        /* Stop List */
+        .stops-list {
+            margin: 20px 0;
+        }
+        
+        .stop-item {
+            border: 4px solid #000000;
+            background: #FFFFFF;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.1s;
+        }
+        
+        .stop-item:hover {
+            background: #FFFF00;
+            transform: translateX(-5px);
+        }
+        
+        .stop-info {
+            flex: 1;
+        }
+        
+        .stop-line {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #000000;
+            color: #FFFFFF;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            border: 3px solid #000000;
+        }
+        
+        .stop-line.bus {
+            background: #4CAF50;
+        }
+        
+        .stop-line.metro {
+            background: #2196F3;
+        }
+        
+        .stop-line.rer {
+            background: #9C27B0;
+        }
+        
+        .stop-line.tram {
+            background: #FF9800;
+            color: #000000;
+        }
+        
+        .stop-name {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        
+        .stop-direction {
+            color: #666666;
+            font-size: 0.9rem;
+            font-weight: normal;
+        }
+        
+        .stop-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        /* Info Box */
+        .info-box {
+            padding: 20px;
+            border: 4px solid #000000;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        
+        .info-box.warning {
+            background: #FFFF00;
+        }
+        
+        .info-box.info {
+            background: #00BFFF;
+        }
+        
+        .info-box.success {
+            background: #00FF00;
+        }
+        
+        .info-box.error {
+            background: #FF69B4;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .empty-state-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+        }
+        
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            padding: 20px 30px;
+            border: 5px solid #000000;
+            font-weight: bold;
+            text-transform: uppercase;
+            z-index: 10000;
+            animation: slideIn 0.3s;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(400px); }
+            to { transform: translateX(0); }
+        }
+        
+        .toast.success {
+            background: #00FF00;
+        }
+        
+        .toast.error {
+            background: #FF0000;
+            color: #FFFFFF;
+        }
+    </style>
 </head>
 <body>
-    <div class="admin-container">
-        <header class="admin-header">
-            <div class="header-left">
-                <a href="/" class="back-link">← Retour au Dashboard</a>
+    <div class="brutal-header">
+        <h1>⚙️ PARAMÈTRES</h1>
+    </div>
+
+    <div class="container">
+        <a href="/" class="btn btn-back">← RETOUR AU DASHBOARD</a>
+
+        <!-- Stops List -->
+        <div class="panel">
+            <div class="panel-header">MES ARRÊTS</div>
+            <div class="panel-body">
+                <div id="stops-list" class="stops-list">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+                <a href="/setup" class="btn btn-primary">+ AJOUTER UN ARRÊT</a>
             </div>
-            <h1>⚙️ Administration</h1>
-            <div class="header-right">
-                <span id="api-status-badge" class="badge {% if api_key_set %}badge-success{% else %}badge-warning{% endif %}">
-                    {% if api_key_set %}API OK{% else %}API Non configurée{% endif %}
-                </span>
+        </div>
+
+        <!-- Actions -->
+        <div class="panel">
+            <div class="panel-header">ACTIONS</div>
+            <div class="panel-body">
+                <div class="info-box warning">
+                    ⚠️ <strong>ATTENTION:</strong> Cette action supprimera tous vos arrêts configurés.
+                </div>
+                <button class="btn btn-danger" onclick="clearAllStops()">
+                    🗑️ SUPPRIMER TOUS LES ARRÊTS
+                </button>
             </div>
-        </header>
+        </div>
+    </div>
 
-        <main class="admin-content">
-            <!-- API Configuration -->
-            <section class="admin-section">
-                <h2>🔑 Configuration API</h2>
-                <form id="api-config-form" class="form-inline">
-                    <div class="form-group">
-                        <label for="api-key">Clé API IDFM PRIM :</label>
-                        <input type="password" id="api-key" name="api_key" 
-                               placeholder="{% if api_key_set %}••••••••{% else %}Entrez votre clé API{% endif %}">
-                        <button type="button" id="toggle-api-key" class="btn btn-small">👁️</button>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Enregistrer</button>
-                    <button type="button" id="test-api" class="btn btn-secondary">Tester</button>
-                </form>
-                <div id="api-message" class="message"></div>
-            </section>
-
-            <!-- Display Settings -->
-            <section class="admin-section">
-                <h2>🎨 Paramètres d'affichage</h2>
-                <form id="display-config-form">
-                    <div class="form-group">
-                        <label for="refresh-interval">Intervalle de rafraîchissement (secondes) :</label>
-                        <input type="number" id="refresh-interval" name="refresh_interval" 
-                               min="10" max="300" value="{{ config.api.refresh_interval_seconds }}">
-                    </div>
-                    <button type="submit" class="btn btn-primary">Enregistrer</button>
-                </form>
-            </section>
-
-            <!-- Stops Management -->
-            <section class="admin-section">
-                <h2>🚏 Arrêts surveillés</h2>
+    <script>
+        async function loadStops() {
+            try {
+                const res = await fetch('/api/config');
+                const data = await res.json();
                 
-                <div class="stops-management">
-                    <div id="stops-list" class="stops-list sortable">
-                        {% for stop in stops %}
-                        <div class="stop-item" data-id="{{ stop.id }}" data-direction="{{ stop.direction or '' }}" draggable="true">
-                            <span class="drag-handle">⋮⋮</span>
-                            <span class="transport-icon">
-                                {% if stop.transport_type == 'bus' %}🚌
-                                {% elif stop.transport_type == 'metro' %}🚇
-                                {% elif stop.transport_type == 'rer' %}🚆
-                                {% elif stop.transport_type == 'train' %}🚄
-                                {% elif stop.transport_type == 'tram' %}🚊
-                                {% else %}🚏{% endif %}
-                            </span>
+                const container = document.getElementById('stops-list');
+                
+                if (!data.stops || data.stops.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🚇</div>
+                            <h2>AUCUN ARRÊT</h2>
+                            <p style="margin: 20px 0;">Ajoutez votre premier arrêt pour commencer</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = data.stops.map((stop, index) => {
+                    const type = (stop.transport_type || 'bus').toLowerCase();
+                    return `
+                        <div class="stop-item">
                             <div class="stop-info">
-                                <strong class="line-badge">{{ stop.line }}</strong>
-                                <span class="stop-name">{{ stop.name }}</span>
-                                {% if stop.direction %}
-                                <span class="direction">→ {{ stop.direction }}</span>
-                                {% endif %}
+                                <div class="stop-line ${type}">${escapeHtml(stop.line)}</div>
+                                <div class="stop-name">${escapeHtml(stop.name)}</div>
+                                <div class="stop-direction">→ ${escapeHtml(stop.direction || '')}</div>
                             </div>
                             <div class="stop-actions">
-                                <button class="btn btn-danger btn-small remove-stop"
-                                        data-id="{{ stop.id }}"
-                                        data-direction="{{ stop.direction or '' }}">
-                                    🗑️
+                                <button class="btn btn-danger" onclick="removeStop(${index})">
+                                    ✕
                                 </button>
                             </div>
                         </div>
-                        {% else %}
-                        <p class="no-stops">Aucun arrêt configuré</p>
-                        {% endfor %}
-                    </div>
-                </div>
+                    `;
+                }).join('');
+            } catch (e) {
+                console.error('Load error:', e);
+            }
+        }
 
-                <div class="add-stop-section">
-                    <h3>➕ Ajouter un arrêt</h3>
-                    <div class="search-box">
-                        <input type="text" id="stop-search" placeholder="Rechercher un arrêt...">
-                        <select id="transport-filter">
-                            <option value="">Tous</option>
-                            <option value="bus">🚌 Bus</option>
-                            <option value="metro">🚇 Métro</option>
-                            <option value="rer">🚆 RER</option>
-                            <option value="train">🚄 Train</option>
-                            <option value="tram">🚊 Tram</option>
-                        </select>
-                        <button id="search-btn" class="btn btn-primary">🔍</button>
-                    </div>
-                    
-                    <div id="search-results" class="search-results"></div>
-                    
-                    <div id="direction-modal" class="modal" style="display: none;">
-                        <div class="modal-content">
-                            <h3>Sélectionner une direction</h3>
-                            <div id="directions-list"></div>
-                            <button class="btn btn-secondary close-modal">Annuler</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
+        async function removeStop(index) {
+            if (!confirm('SUPPRIMER CET ARRÊT?')) {
+                return;
+            }
 
-            <!-- Quick Actions -->
-            <section class="admin-section">
-                <h2>⚡ Actions rapides</h2>
-                <div class="quick-actions">
-                    <button id="refresh-now" class="btn btn-primary">🔄 Rafraîchir maintenant</button>
-                    <button id="export-config" class="btn btn-secondary">📤 Exporter config</button>
-                    <button id="import-config" class="btn btn-secondary">📥 Importer config</button>
-                </div>
-            </section>
-        </main>
-    </div>
+            try {
+                const res = await fetch('/api/config');
+                const data = await res.json();
+                
+                data.stops.splice(index, 1);
+                
+                const formData = new FormData();
+                formData.append('stops', JSON.stringify(data.stops));
+                
+                const saveRes = await fetch('/api/stops/update', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (saveRes.ok) {
+                    showToast('ARRÊT SUPPRIMÉ', 'success');
+                    loadStops();
+                } else {
+                    showToast('ERREUR', 'error');
+                }
+            } catch (e) {
+                console.error('Remove error:', e);
+                showToast('ERREUR', 'error');
+            }
+        }
 
-    <script src="/static/admin.js"></script>
+        async function clearAllStops() {
+            if (!confirm('SUPPRIMER TOUS LES ARRÊTS?\nCETTE ACTION EST IRRÉVERSIBLE!')) {
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('stops', JSON.stringify([]));
+                
+                const res = await fetch('/api/stops/update', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (res.ok) {
+                    showToast('TOUS LES ARRÊTS ONT ÉTÉ SUPPRIMÉS', 'success');
+                    loadStops();
+                } else {
+                    showToast('ERREUR', 'error');
+                }
+            } catch (e) {
+                console.error('Clear error:', e);
+                showToast('ERREUR', 'error');
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text || '';
+            return div.innerHTML;
+        }
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        loadStops();
+    </script>
 </body>
 </html>

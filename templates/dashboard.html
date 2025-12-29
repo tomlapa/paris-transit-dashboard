@@ -3,36 +3,417 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="300">
-    <title>Transit Dashboard - Paris</title>
+    <title>TRANSIT DASHBOARD</title>
     <link rel="stylesheet" href="/static/style.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚇</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #FFFFFF;
+            color: #000000;
+            font-family: 'Arial Black', 'Arial Bold', sans-serif;
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        .brutal-header {
+            background: #000000;
+            color: #FFFFFF;
+            padding: 20px 30px;
+            border-bottom: 8px solid #FFFF00;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .brutal-header h1 {
+            font-size: 2rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        
+        .live-indicator {
+            background: #00FF00;
+            color: #000000;
+            padding: 8px 16px;
+            border: 3px solid #000000;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        
+        .time-display {
+            color: #FFFF00;
+            font-size: 1.5rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+        
+        /* Grid Container */
+        .stops-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            padding: 30px;
+        }
+        
+        /* Stop Card */
+        .stop-card {
+            background: #FFFFFF;
+            border: 6px solid #000000;
+            position: relative;
+        }
+        
+        /* Colored top bar based on transport type */
+        .stop-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 12px;
+        }
+        
+        .stop-card.bus::before {
+            background: #4CAF50;
+        }
+        
+        .stop-card.metro::before {
+            background: #2196F3;
+        }
+        
+        .stop-card.rer::before {
+            background: #9C27B0;
+        }
+        
+        .stop-card.tram::before {
+            background: #FF9800;
+        }
+        
+        /* Stop Header */
+        .stop-header {
+            padding: 25px 20px 15px 20px;
+            border-bottom: 4px solid #000000;
+        }
+        
+        .line-badge-large {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #FFFF00;
+            border: 4px solid #000000;
+            font-size: 2rem;
+            font-weight: 900;
+            transform: rotate(-2deg);
+            margin-bottom: 15px;
+        }
+        
+        .stop-name {
+            font-size: 1.3rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        
+        .stop-direction {
+            font-size: 0.9rem;
+            color: #666666;
+            font-weight: normal;
+        }
+        
+        /* Departures */
+        .departures-list {
+            padding: 0;
+        }
+        
+        .departure-item {
+            padding: 20px;
+            border-bottom: 3px solid #EEEEEE;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.1s;
+        }
+        
+        .departure-item:hover {
+            background: #FF69B4;
+            transform: translateX(-5px);
+        }
+        
+        .departure-item:last-child {
+            border-bottom: none;
+        }
+        
+        .departure-destination {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        
+        .departure-time {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #00FF00;
+            background: #000000;
+            padding: 8px 16px;
+            border: 3px solid #000000;
+        }
+        
+        .departure-time.soon {
+            background: #FFFF00;
+            color: #000000;
+        }
+        
+        .departure-time.delayed {
+            background: #FF0000;
+            color: #FFFFFF;
+        }
+        
+        /* Status Messages */
+        .status-message {
+            padding: 30px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .status-message.waiting {
+            background: #FFFF00;
+            border-top: 4px solid #000000;
+        }
+        
+        .status-message.error {
+            background: #FF69B4;
+            border-top: 4px solid #000000;
+        }
+        
+        .status-message.info {
+            background: #00BFFF;
+            border-top: 4px solid #000000;
+            color: #000000;
+        }
+        
+        .status-message.no-departures {
+            background: #EEEEEE;
+            border-top: 4px solid #000000;
+        }
+        
+        /* Settings Button */
+        .settings-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: #FF69B4;
+            border: 5px solid #000000;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            transition: all 0.1s;
+            z-index: 1000;
+        }
+        
+        .settings-btn:hover {
+            transform: rotate(90deg);
+            background: #FFFF00;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            padding: 60px 30px;
+            text-align: center;
+        }
+        
+        .empty-state-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+        }
+        
+        .empty-state h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background: #FFFF00;
+            border: 5px solid #000000;
+            color: #000000;
+            text-decoration: none;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.1s;
+        }
+        
+        .btn:hover {
+            background: #FF69B4;
+            transform: translate(-3px, -3px);
+            box-shadow: 3px 3px 0 #000000;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .stops-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 20px;
+            }
+            
+            .brutal-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .time-display {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <div class="header-left">
-            <div class="status-indicator">
-                <span id="status" class="status-dot"></span>
-                <span id="status-text" class="status-text">EN DIRECT</span>
-            </div>
+    <div class="brutal-header">
+        <div>
+            <h1>🚇 PROCHAINS PASSAGES</h1>
         </div>
-        <div class="header-center">
-            <h1>PROCHAINS PASSAGES</h1>
+        <div style="text-align: right;">
+            <div class="live-indicator">● EN DIRECT</div>
+            <div class="time-display" id="current-time">--:--:--</div>
         </div>
-        <div class="header-right">
-            <div id="clock" class="clock">--:--:--</div>
-            <a href="/admin" class="admin-link" title="Administration">⚙️</a>
-        </div>
-    </header>
-
-    <main id="departures-container" class="departures-container">
-        <div class="loading">Chargement des données...</div>
-    </main>
-
-    <div id="cached-indicator" class="cached-indicator" style="display: none;">
-        DONNÉES EN CACHE
     </div>
 
-    <script src="/static/app.js"></script>
+    <a href="/admin" class="settings-btn" title="Paramètres">
+        ⚙️
+    </a>
+
+    <div id="dashboard-content">
+        <!-- Will be populated by JavaScript -->
+    </div>
+
+    <script>
+        let eventSource = null;
+
+        function updateDashboard(data) {
+            const container = document.getElementById('dashboard-content');
+            
+            if (!data.stops || data.stops.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🚇</div>
+                        <h2>Aucun arrêt configuré</h2>
+                        <p style="margin: 20px 0; font-size: 1.1rem;">
+                            Ajoutez vos arrêts pour voir les horaires en temps réel
+                        </p>
+                        <a href="/setup" class="btn">+ Ajouter un arrêt</a>
+                    </div>
+                `;
+                return;
+            }
+
+            const stopsHtml = data.stops.map(stop => {
+                const transportType = (stop.transport_type || 'bus').toLowerCase();
+                const departures = stop.departures || [];
+                
+                let departuresHtml = '';
+                
+                if (stop.error) {
+                    // Check if it's a RER/train message
+                    const isTrainMessage = stop.error.includes('train') || stop.error.includes('SNCF');
+                    departuresHtml = `
+                        <div class="status-message ${isTrainMessage ? 'info' : 'error'}">
+                            ${isTrainMessage ? '🚆' : '⚠️'} ${escapeHtml(stop.error)}
+                        </div>
+                    `;
+                } else if (departures.length === 0) {
+                    departuresHtml = `
+                        <div class="status-message no-departures">
+                            Aucun départ prévu
+                        </div>
+                    `;
+                } else {
+                    departuresHtml = `
+                        <div class="departures-list">
+                            ${departures.map(dep => {
+                                const minutes = Math.floor((new Date(dep.expected) - new Date()) / 60000);
+                                const timeClass = minutes <= 5 ? 'soon' : (dep.status === 'Retardé' ? 'delayed' : '');
+                                
+                                return `
+                                    <div class="departure-item">
+                                        <div class="departure-destination">
+                                            ${escapeHtml(dep.direction)}
+                                        </div>
+                                        <div class="departure-time ${timeClass}">
+                                            ${minutes} MIN.
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    `;
+                }
+                
+                return `
+                    <div class="stop-card ${transportType}">
+                        <div class="stop-header">
+                            <div class="line-badge-large">${escapeHtml(stop.line)}</div>
+                            <div class="stop-name">${escapeHtml(stop.stop_name)}</div>
+                            <div class="stop-direction">→ ${escapeHtml(stop.direction || '')}</div>
+                        </div>
+                        ${departuresHtml}
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = `<div class="stops-grid">${stopsHtml}</div>`;
+        }
+
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('fr-FR', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('current-time').textContent = timeStr;
+        }
+
+        function connectSSE() {
+            if (eventSource) {
+                eventSource.close();
+            }
+
+            eventSource = new EventSource('/events');
+            
+            eventSource.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    updateDashboard(data);
+                } catch (e) {
+                    console.error('Parse error:', e);
+                }
+            };
+            
+            eventSource.onerror = () => {
+                console.error('SSE error, reconnecting...');
+                eventSource.close();
+                setTimeout(connectSSE, 5000);
+            };
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text || '';
+            return div.innerHTML;
+        }
+
+        // Initialize
+        updateTime();
+        setInterval(updateTime, 1000);
+        connectSSE();
+    </script>
 </body>
 </html>
