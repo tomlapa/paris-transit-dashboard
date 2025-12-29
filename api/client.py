@@ -1,5 +1,6 @@
 import httpx
 import os
+import unicodedata
 from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any, Tuple
 from .models import Departure, StopDepartures, StopConfig, SearchResult
@@ -258,6 +259,14 @@ class IDFMClient:
     
     # ==================== STOP SEARCH (legacy) ====================
     
+    def _normalize_text(self, text: str) -> str:
+        """Remove accents and normalize text for search"""
+        # Normalize to NFD (decompose accents)
+        nfd = unicodedata.normalize('NFD', text)
+        # Remove accent marks (category Mn = Mark, Nonspacing)
+        without_accents = ''.join(c for c in nfd if unicodedata.category(c) != 'Mn')
+        return without_accents.lower().strip()
+    
     async def search_stops(self, query: str, transport_type: str = None) -> List[SearchResult]:
         """Search stops using local index (built from real-time data perimeter)"""
         results = []
@@ -265,12 +274,14 @@ class IDFMClient:
         if not query or len(query) < 2:
             return results
         
-        query_lower = query.lower().strip()
+        # Normalize query for accent-insensitive search
+        query_normalized = self._normalize_text(query)
         matched_stops = set()
         
-        # Search through index terms
+        # Search through index terms (normalized comparison)
         for term, stop_ids in self._search_index["search_terms"].items():
-            if query_lower in term:
+            term_normalized = self._normalize_text(term)
+            if query_normalized in term_normalized:
                 matched_stops.update(stop_ids)
         
         # Build results from matched stops

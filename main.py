@@ -52,20 +52,26 @@ async def fetch_all_stops():
     """Background task to continuously refresh transit data"""
     global current_data
     
+    print(f"[FETCH] Background task started")
+    
     while True:
         client = get_client()
         if client and config_manager.stops:
-            print(f"[{paris_now().strftime('%H:%M:%S')}] Fetching transit data...")
+            print(f"[{paris_now().strftime('%H:%M:%S')}] Fetching transit data for {len(config_manager.stops)} stops...")
             
             for stop_config in config_manager.stops:
                 try:
-                    departures = await client.get_departures(stop_config)
                     key = f"{stop_config.id}:{stop_config.direction or ''}"
+                    print(f"  Fetching {stop_config.name} (key: {key})...")
+                    departures = await client.get_departures(stop_config)
                     current_data[key] = departures
+                    print(f"  ✓ Got {len(departures.departures)} departures for {stop_config.name}")
                 except Exception as e:
-                    print(f"  Error fetching {stop_config.name}: {e}")
+                    print(f"  ✗ Error fetching {stop_config.name}: {e}")
             
-            print(f"  ✓ Updated {len(config_manager.stops)} stops")
+            print(f"  ✓ Updated {len(config_manager.stops)} stops. Current data keys: {list(current_data.keys())}")
+        else:
+            print(f"[FETCH] Waiting... client={client is not None}, stops={len(config_manager.stops) if config_manager.stops else 0}")
         
         await asyncio.sleep(config_manager.refresh_interval)
 

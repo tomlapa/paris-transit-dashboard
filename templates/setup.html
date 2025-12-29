@@ -738,13 +738,10 @@
 
                 if (saveRes.ok && result.success) {
                     showToast('LIGNE AJOUTÉE!', 'success');
+                    // Automatically go back to search to add another stop
                     setTimeout(() => {
-                        if (confirm('LIGNE AJOUTÉE! EN AJOUTER UNE AUTRE?')) {
-                            backToSearch();
-                        } else {
-                            window.location.href = '/';
-                        }
-                    }, 1000);
+                        backToSearch();
+                    }, 800);
                 } else {
                     console.error('Save failed:', result);
                     showToast(result.message || 'ERREUR', 'error');
