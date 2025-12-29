@@ -1,0 +1,344 @@
+/* Paris Transit Dashboard - Classic Retro Style */
+:root {
+    --bg-color: #1a1a1a;
+    --card-bg: #252525;
+    --accent-color: #e67e22;
+    --text-primary: #ffffff;
+    --text-secondary: #b0b0b0;
+    --time-color: #2ecc71;
+    --delay-color: #e74c3c;
+    --early-color: #3498db;
+    --border-color: #e67e22;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
+    border-bottom: 3px solid var(--accent-color);
+}
+
+.header-left, .header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-width: 200px;
+}
+
+.header-right {
+    justify-content: flex-end;
+}
+
+.header-center h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--text-primary);
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--time-color);
+    animation: pulse 2s infinite;
+}
+
+.status-dot.offline {
+    background-color: var(--delay-color);
+    animation: none;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.status-text {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: var(--time-color);
+}
+
+.status-text.offline {
+    color: var(--delay-color);
+}
+
+.clock {
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+    color: var(--accent-color);
+}
+
+.admin-link {
+    font-size: 1.5rem;
+    text-decoration: none;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.admin-link:hover {
+    opacity: 1;
+}
+
+/* Main Container */
+.departures-container {
+    flex: 1;
+    display: grid;
+    gap: 1rem;
+    padding: 1rem;
+    align-content: start;
+}
+
+/* Dynamic columns based on stop count */
+.departures-container.cols-1 { grid-template-columns: 1fr; max-width: 500px; margin: 0 auto; }
+.departures-container.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.departures-container.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.departures-container.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+/* Stop Card */
+.stop {
+    background: var(--card-bg);
+    border-radius: 8px;
+    border-left: 4px solid var(--accent-color);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.stop-header {
+    background: linear-gradient(180deg, #333 0%, #252525 100%);
+    padding: 1rem;
+    text-align: center;
+}
+
+.line-badge {
+    display: inline-block;
+    background: var(--accent-color);
+    color: var(--bg-color);
+    padding: 0.5rem 1.5rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+/* Transport-specific colors */
+.line-badge.metro { background: #003366; color: white; }
+.line-badge.rer { background: #7B7B7B; color: white; }
+.line-badge.tram { background: #00A651; color: white; }
+.line-badge.train { background: #82368C; color: white; }
+
+.stop-name {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+.stop-direction {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--early-color);
+    margin-top: 0.25rem;
+}
+
+/* Departures List */
+.departures-list {
+    flex: 1;
+    padding: 0.5rem;
+}
+
+.departure {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: #1e1e1e;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.departure:last-child {
+    margin-bottom: 0;
+}
+
+.departure-direction {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 1rem;
+}
+
+.time-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+}
+
+.time {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--time-color);
+    font-family: 'Courier New', monospace;
+}
+
+.time.delayed {
+    color: var(--delay-color);
+}
+
+.time.early {
+    color: var(--early-color);
+}
+
+.time.at-stop {
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+.delay-info {
+    font-size: 0.7rem;
+    color: var(--delay-color);
+    font-weight: 600;
+}
+
+.scheduled-time {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+}
+
+/* No departures */
+.no-departures {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* Error state */
+.error-message {
+    text-align: center;
+    padding: 1rem;
+    color: var(--delay-color);
+    font-size: 0.85rem;
+}
+
+/* Loading */
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+/* Cached indicator */
+.cached-indicator {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    background: var(--delay-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Realtime indicator */
+.realtime-badge {
+    font-size: 0.6rem;
+    color: var(--time-color);
+    margin-left: 0.25rem;
+}
+
+.theoretical-badge {
+    font-size: 0.6rem;
+    color: var(--text-secondary);
+    margin-left: 0.25rem;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .departures-container.cols-4 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .departures-container.cols-3,
+    .departures-container.cols-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    header {
+        padding: 0.75rem 1rem;
+    }
+    
+    .header-center h1 {
+        font-size: 1.1rem;
+    }
+    
+    .clock {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .departures-container {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .header-left {
+        display: none;
+    }
+    
+    .header-center h1 {
+        font-size: 1rem;
+    }
+}
