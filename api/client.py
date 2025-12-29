@@ -372,16 +372,6 @@ class IDFMClient:
         """Get real-time departures using PRIM stop-monitoring API"""
         now = self._get_paris_time()
         
-        # PRIM doesn't support RER/Transilien real-time data
-        if stop_config.transport_type and stop_config.transport_type.lower() in ['rer', 'train', 'rail']:
-            return StopDepartures(
-                stop_id=stop_config.id, stop_name=stop_config.name,
-                line=stop_config.line, line_id=stop_config.line_id,
-                direction=stop_config.direction, last_updated=now,
-                departures=[], 
-                error="Les horaires temps réel des trains ne sont pas disponibles via PRIM. Consultez l'application SNCF ou Île-de-France Mobilités."
-            )
-        
         print(f"[DEBUG] Getting departures for: {stop_config.line} at {stop_config.name}")
         print(f"[DEBUG] Stop ID: {stop_config.id}, Line ID: {stop_config.line_id}")
         print(f"[DEBUG] Direction filter: {stop_config.direction}")
