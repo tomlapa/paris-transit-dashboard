@@ -128,10 +128,16 @@ async def get_departures():
     """Get current departure data for all configured stops"""
     stops_data = []
     
+    print(f"[GET_DEPARTURES] Called. Config has {len(config_manager.stops)} stops")
+    print(f"[GET_DEPARTURES] current_data has {len(current_data)} keys: {list(current_data.keys())}")
+    
     for i, stop_config in enumerate(config_manager.stops):
         key = f"{stop_config.id}:{stop_config.direction or ''}"
+        print(f"[GET_DEPARTURES] Stop {i}: Looking for key '{key}'")
+        print(f"[GET_DEPARTURES]   Stop config: id={stop_config.id}, name={stop_config.name}, direction={stop_config.direction}")
         
         if key in current_data:
+            print(f"[GET_DEPARTURES]   ✓ Found data for key '{key}'")
             data = current_data[key]
             stops_data.append({
                 "index": i,
@@ -157,6 +163,7 @@ async def get_departures():
                 "error": data.error
             })
         else:
+            print(f"[GET_DEPARTURES]   ✗ Key '{key}' NOT FOUND in current_data")
             stops_data.append({
                 "index": i,
                 "id": stop_config.id,
@@ -370,6 +377,8 @@ async def add_stop(
     transport_type: str = Form("bus")
 ):
     """Add a new stop to monitoring"""
+    global background_task
+    
     stop = StopConfig(
         id=stop_id,
         name=stop_name,
@@ -383,6 +392,16 @@ async def add_stop(
     success = config_manager.add_stop(stop)
     
     if success:
+        # Restart background task to fetch new stop
+        print(f"[ADD_STOP] Stop added, restarting background task")
+        if background_task and not background_task.done():
+            background_task.cancel()
+            try:
+                await background_task
+            except asyncio.CancelledError:
+                pass
+        background_task = asyncio.create_task(fetch_all_stops())
+        
         return {"success": True, "message": f"Arrêt {stop_name} ajouté"}
     else:
         return {"success": False, "message": "Cet arrêt existe déjà"}
@@ -391,6 +410,8 @@ async def add_stop(
 @app.post("/api/stops/remove")
 async def remove_stop(stop_id: str = Form(...), direction: str = Form(None)):
     """Remove a stop from monitoring"""
+    global background_task
+    
     success = config_manager.remove_stop(stop_id, direction)
     
     if success:
@@ -398,6 +419,17 @@ async def remove_stop(stop_id: str = Form(...), direction: str = Form(None)):
         key = f"{stop_id}:{direction or ''}"
         if key in current_data:
             del current_data[key]
+        
+        # Restart background task
+        print(f"[REMOVE_STOP] Stop removed, restarting background task")
+        if background_task and not background_task.done():
+            background_task.cancel()
+            try:
+                await background_task
+            except asyncio.CancelledError:
+                pass
+        background_task = asyncio.create_task(fetch_all_stops())
+        
         return {"success": True}
     return {"success": False, "message": "Arrêt non trouvé"}
 
