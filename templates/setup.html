@@ -672,8 +672,16 @@
                         </div>
                     `).join('');
                 } else {
-                    state.selectedDirection = state.selectedLine.line_name;
-                    container.innerHTML = `<div class="info-box">Aucune direction disponible. La ligne sera ajoutée avec la direction par défaut.</div>`;
+                    // No real-time directions - use line name as default direction
+                    state.selectedDirection = result.line_name || 'Direction par défaut';
+                    container.innerHTML = `
+                        <div class="info-box">
+                            Aucune direction en temps réel disponible.<br>
+                            <strong>Direction par défaut:</strong> ${escapeHtml(state.selectedDirection)}<br><br>
+                            Vous pouvez ajouter la ligne maintenant.
+                        </div>
+                    `;
+                    console.log('Direction set to:', state.selectedDirection);
                 }
             } catch (e) {
                 console.error('Direction error:', e);
@@ -691,8 +699,17 @@
 
         // Save config
         async function saveConfig() {
+            console.log('Saving config with state:', state);
+            
             if (!state.selectedDirection) {
                 showToast('Veuillez sélectionner une direction', 'error');
+                console.error('No direction selected');
+                return;
+            }
+
+            if (!state.selectedStop || !state.selectedLine) {
+                showToast('Informations manquantes', 'error');
+                console.error('Missing stop or line data');
                 return;
             }
 
@@ -707,6 +724,8 @@
                     direction: state.selectedDirection,
                     route_id: state.selectedLine.route_id
                 };
+
+                console.log('Adding stop:', newStop);
 
                 const allStops = [...(config.stops || []), newStop];
 
@@ -729,11 +748,13 @@
                         }
                     }, 1000);
                 } else {
+                    const errorData = await saveRes.text();
+                    console.error('Save failed:', saveRes.status, errorData);
                     showToast('Erreur lors de l\'enregistrement', 'error');
                 }
             } catch (e) {
                 console.error('Save error:', e);
-                showToast('Erreur lors de l\'enregistrement', 'error');
+                showToast('Erreur: ' + e.message, 'error');
             }
         }
 
