@@ -3,580 +3,744 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configuration - Transit Dashboard</title>
-    <link rel="stylesheet" href="/static/style.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
-          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
-          crossorigin=""/>
+    <title>CONFIGURATION - TRANSIT</title>
     
     <style>
-        body {
-            background: #1a1a2e;
-            color: #eee;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            padding: 20px;
-            margin: 0 auto;
-            max-width: 1400px;
-        }
-        
-        .setup-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .setup-header h1 {
-            color: #f68b1e;
-            font-size: 2rem;
+        * {
             margin: 0;
-        }
-        
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #3a3a5c;
-        }
-        
-        .tab {
-            padding: 12px 24px;
-            background: transparent;
-            border: none;
-            color: #888;
-            cursor: pointer;
-            font-size: 1rem;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s;
-        }
-        
-        .tab:hover {
-            color: #f68b1e;
-        }
-        
-        .tab.active {
-            color: #f68b1e;
-            border-bottom-color: #f68b1e;
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        /* Progress Indicator */
-        .progress-indicator {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 30px;
-            padding: 0 20px;
-        }
-        
-        .progress-step {
-            flex: 1;
-            text-align: center;
-            position: relative;
-        }
-        
-        .progress-step::before {
-            content: '';
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            right: -50%;
-            height: 2px;
-            background: #3a3a5c;
-            z-index: 0;
-        }
-        
-        .progress-step:last-child::before {
-            display: none;
-        }
-        
-        .progress-step.active::before {
-            background: #f68b1e;
-        }
-        
-        .progress-circle {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #252542;
-            border: 2px solid #3a3a5c;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            position: relative;
-            z-index: 1;
-            margin-bottom: 8px;
-        }
-        
-        .progress-step.active .progress-circle {
-            background: #f68b1e;
-            border-color: #f68b1e;
-            color: #000;
-        }
-        
-        .progress-step.completed .progress-circle {
-            background: #4caf50;
-            border-color: #4caf50;
-            color: #fff;
-        }
-        
-        .progress-label {
-            font-size: 0.85rem;
-            color: #888;
-        }
-        
-        .progress-step.active .progress-label {
-            color: #f68b1e;
-            font-weight: 600;
-        }
-        
-        /* Step Container */
-        .step-container {
-            background: #252542;
-            border-radius: 12px;
-            padding: 30px;
-            margin-bottom: 20px;
-        }
-        
-        .step-content {
-            display: none;
-        }
-        
-        .step-content.active {
-            display: block;
-        }
-        
-        .step-title {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-            color: #f68b1e;
-        }
-        
-        /* Form Elements */
-        .search-box {
-            position: relative;
-            margin-bottom: 20px;
-        }
-        
-        .search-box input {
-            width: 100%;
-            padding: 15px;
-            padding-right: 120px;
-            border: 2px solid #3a3a5c;
-            border-radius: 8px;
-            background: #1a1a2e;
-            color: #fff;
-            font-size: 1rem;
+            padding: 0;
             box-sizing: border-box;
         }
         
-        .search-box input:focus {
-            border-color: #f68b1e;
-            outline: none;
+        body {
+            background: #FFFFFF;
+            color: #000000;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            padding: 0;
         }
         
-        .search-box button {
-            position: absolute;
-            right: 5px;
-            top: 5px;
-            padding: 10px 20px;
-            background: #f68b1e;
-            border: none;
-            border-radius: 6px;
-            color: #000;
-            font-weight: 600;
-            cursor: pointer;
+        /* Brutalist Header */
+        .brutal-header {
+            background: #000000;
+            color: #FFFFFF;
+            padding: 30px;
+            border-bottom: 5px solid #FFFF00;
         }
         
-        .search-box button:hover {
-            background: #ff9d3d;
+        .brutal-header h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            letter-spacing: 4px;
+            text-transform: uppercase;
         }
         
-        /* Selection Lists */
-        .selection-list {
-            max-height: 400px;
-            overflow-y: auto;
+        .brutal-header .subtitle {
+            font-size: 1rem;
+            margin-top: 10px;
+            letter-spacing: 2px;
+            color: #FFFF00;
+        }
+        
+        /* Container */
+        .brutal-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+        
+        /* Panel */
+        .brutal-panel {
+            background: #FFFFFF;
+            border: 5px solid #000000;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .panel-header {
+            background: #000000;
+            color: #FFFF00;
+            padding: 15px 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            border-bottom: 3px solid #FFFF00;
+        }
+        
+        .panel-body {
+            padding: 30px;
+        }
+        
+        /* Input Groups */
+        .input-group {
             margin: 20px 0;
         }
         
-        .selection-item {
-            padding: 15px;
-            background: #1a1a2e;
-            border: 2px solid #3a3a5c;
-            border-radius: 8px;
+        .input-group label {
+            display: block;
+            font-weight: bold;
             margin-bottom: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .selection-item:hover {
-            border-color: #f68b1e;
-            transform: translateX(5px);
-        }
-        
-        .selection-item.selected {
-            border-color: #f68b1e;
-            background: #2a2a4a;
-        }
-        
-        .selection-item input[type="radio"],
-        .selection-item input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-        }
-        
-        .item-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            flex-shrink: 0;
-        }
-        
-        .item-details {
-            flex: 1;
-        }
-        
-        .item-name {
-            font-weight: 600;
-            font-size: 1.1rem;
-            margin-bottom: 4px;
-        }
-        
-        .item-meta {
-            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
             font-size: 0.9rem;
         }
         
-        /* Direction Groups */
-        .direction-group {
-            margin-bottom: 20px;
+        .input-group input {
+            width: 100%;
             padding: 15px;
-            background: #1a1a2e;
-            border-radius: 8px;
+            border: 3px solid #000000;
+            background: #FFFFFF;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            font-weight: bold;
         }
         
-        .direction-group-title {
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: #f68b1e;
-        }
-        
-        .direction-option {
-            padding: 10px;
-            margin: 5px 0;
-            border: 2px solid #3a3a5c;
-            border-radius: 6px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .direction-option:hover {
-            border-color: #f68b1e;
-        }
-        
-        .direction-option.selected {
-            border-color: #f68b1e;
-            background: #2a2a4a;
+        .input-group input:focus {
+            outline: none;
+            border-color: #FFFF00;
+            box-shadow: 0 0 0 3px #FFFF00;
         }
         
         /* Buttons */
         .btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
+            padding: 15px 30px;
+            border: 3px solid #000000;
+            background: #FFFFFF;
+            color: #000000;
+            font-family: 'Courier New', monospace;
             font-size: 1rem;
-            font-weight: 600;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.1s;
+        }
+        
+        .btn:hover {
+            background: #000000;
+            color: #FFFFFF;
+        }
+        
+        .btn:active {
+            transform: translate(2px, 2px);
         }
         
         .btn-primary {
-            background: #f68b1e;
-            color: #000;
+            background: #FFFF00;
+            border-color: #000000;
         }
         
-        .btn-primary:hover:not(:disabled) {
-            background: #ff9d3d;
+        .btn-primary:hover {
+            background: #000000;
+            color: #FFFF00;
         }
         
-        .btn-primary:disabled {
-            background: #3a3a5c;
-            color: #666;
-            cursor: not-allowed;
+        .btn-success {
+            background: #00FF00;
         }
         
-        .btn-secondary {
-            background: #3a3a5c;
-            color: #fff;
+        .btn-success:hover {
+            background: #000000;
+            color: #00FF00;
         }
         
-        .btn-secondary:hover {
-            background: #4a4a6c;
+        .btn-danger {
+            background: #FF0000;
+            color: #FFFFFF;
         }
         
-        .button-group {
+        .btn-danger:hover {
+            background: #000000;
+            color: #FF0000;
+        }
+        
+        /* Search Box */
+        .search-brutal {
+            position: relative;
             display: flex;
-            gap: 10px;
-            margin-top: 20px;
+            gap: 0;
         }
         
-        /* Info Messages */
-        .info-message {
-            padding: 15px;
-            background: #2a2a4a;
-            border-left: 4px solid #f68b1e;
-            border-radius: 6px;
-            margin: 15px 0;
+        .search-brutal input {
+            flex: 1;
+            padding: 20px;
+            border: 5px solid #000000;
+            border-right: none;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            font-weight: bold;
         }
         
-        .error-message {
-            padding: 15px;
-            background: #4a2a2a;
-            border-left: 4px solid #f44336;
-            border-radius: 6px;
-            margin: 15px 0;
-            color: #ffcccc;
+        .search-brutal button {
+            padding: 20px 40px;
+            border: 5px solid #000000;
+            background: #FFFF00;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
         }
         
-        .success-message {
-            padding: 15px;
-            background: #2a4a2a;
-            border-left: 4px solid #4caf50;
-            border-radius: 6px;
-            margin: 15px 0;
-            color: #ccffcc;
+        .search-brutal button:hover {
+            background: #000000;
+            color: #FFFF00;
         }
         
-        /* Map Container */
-        .map-container {
-            height: 400px;
-            border-radius: 8px;
-            overflow: hidden;
+        /* Results */
+        .results-brutal {
+            margin-top: 30px;
+        }
+        
+        .result-card {
+            border: 4px solid #000000;
+            background: #FFFFFF;
+            margin-bottom: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.1s;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .result-card:hover {
+            background: #FFFF00;
+            transform: translate(-5px, -5px);
+            box-shadow: 5px 5px 0 #000000;
+        }
+        
+        .line-badge {
+            width: 80px;
+            height: 80px;
+            border: 4px solid #000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 900;
+            flex-shrink: 0;
+        }
+        
+        .line-badge.bus {
+            background: #4CAF50;
+            color: #FFFFFF;
+        }
+        
+        .line-badge.metro {
+            background: #2196F3;
+            color: #FFFFFF;
+        }
+        
+        .line-badge.rer {
+            background: #9C27B0;
+            color: #FFFFFF;
+        }
+        
+        .line-badge.tram {
+            background: #FF9800;
+            color: #000000;
+        }
+        
+        .result-info {
+            flex: 1;
+        }
+        
+        .result-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+        
+        .result-meta {
+            font-size: 0.9rem;
+            color: #666666;
+        }
+        
+        /* Direction Selection */
+        .direction-brutal {
             margin: 20px 0;
         }
         
-        #map {
-            height: 100%;
-            width: 100%;
+        .direction-card {
+            border: 4px solid #000000;
+            background: #FFFFFF;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.1s;
         }
         
-        /* Loading Spinner */
-        .loading {
+        .direction-card:hover {
+            background: #FFFF00;
+        }
+        
+        .direction-card.selected {
+            background: #000000;
+            color: #FFFFFF;
+        }
+        
+        .direction-card input[type="radio"] {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #000000;
+            cursor: pointer;
+        }
+        
+        .direction-text {
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        /* Info Boxes */
+        .info-brutal {
+            padding: 20px;
+            border: 4px solid #000000;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        
+        .info-brutal.success {
+            background: #00FF00;
+        }
+        
+        .info-brutal.warning {
+            background: #FFFF00;
+        }
+        
+        .info-brutal.error {
+            background: #FF0000;
+            color: #FFFFFF;
+        }
+        
+        .info-brutal.info {
+            background: #00BFFF;
+        }
+        
+        /* Loading */
+        .loading-brutal {
             text-align: center;
             padding: 40px;
-            color: #888;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 3px;
         }
         
-        .spinner {
-            border: 3px solid #3a3a5c;
-            border-top: 3px solid #f68b1e;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
+        .loading-brutal::after {
+            content: '...';
+            animation: dots 1.5s steps(4) infinite;
         }
         
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
         }
         
-        /* API Key Section */
-        .api-key-section {
-            background: #252542;
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 30px;
+        /* Toast */
+        .toast-brutal {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            padding: 20px 30px;
+            border: 5px solid #000000;
+            font-weight: bold;
+            text-transform: uppercase;
+            z-index: 10000;
+            animation: slideInRight 0.3s;
         }
         
+        @keyframes slideInRight {
+            from { transform: translateX(400px); }
+            to { transform: translateX(0); }
+        }
+        
+        .toast-brutal.success {
+            background: #00FF00;
+        }
+        
+        .toast-brutal.error {
+            background: #FF0000;
+            color: #FFFFFF;
+        }
+        
+        /* API Status */
         .api-status {
             display: inline-block;
-            padding: 6px 12px;
-            border-radius: 15px;
-            font-size: 0.85rem;
-            font-weight: 600;
+            padding: 10px 20px;
+            border: 3px solid #000000;
+            font-weight: bold;
+            margin-top: 10px;
         }
         
         .api-status.valid {
-            background: #4caf50;
-            color: #fff;
+            background: #00FF00;
         }
         
         .api-status.invalid {
-            background: #f44336;
-            color: #fff;
+            background: #FF0000;
+            color: #FFFFFF;
+        }
+        
+        /* Button Group */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .button-group .btn {
+            flex: 1;
         }
     </style>
 </head>
 <body>
-    <div class="setup-header">
-        <h1>🚇 Configuration du Dashboard</h1>
-        <p>Configurez vos arrêts et lignes de transport</p>
+    <div class="brutal-header">
+        <h1>🚇 TRANSIT</h1>
+        <div class="subtitle">CONFIGURATION DU SYSTÈME</div>
     </div>
 
-    <!-- API Key Section -->
-    <div class="api-key-section">
-        <h3>Clé API IDFM</h3>
-        <div class="form-group">
-            <div style="position: relative;">
-                <input type="text" id="api-key" placeholder="Votre clé API" value="" style="padding-right: 120px;">
-                <button class="btn btn-secondary" onclick="toggleApiKeyVisibility()" 
-                        style="position: absolute; right: 5px; top: 5px; padding: 8px 12px; font-size: 0.85rem;"
-                        id="toggle-visibility-btn"
-                        title="Cliquez pour masquer/afficher">
-                    🔒 Masquer
-                </button>
-            </div>
-            <button class="btn btn-primary" onclick="validateApiKey()" style="margin-top: 10px;">Valider la clé</button>
-            <div id="api-status" style="margin-top: 10px;"></div>
-        </div>
-        <p style="color: #888; font-size: 0.9rem;">
-            Obtenez votre clé gratuite sur 
-            <a href="https://prim.iledefrance-mobilites.fr" target="_blank" style="color: #f68b1e;">
-                prim.iledefrance-mobilites.fr
-            </a>
-        </p>
-    </div>
-
-    <!-- Main Search Section -->
-    <div class="step-container">
-        <h2 class="step-title">🔍 Rechercher un arrêt ou une ligne</h2>
-        <div class="info-message">
-            Recherchez par nom d'arrêt, nom de ligne, ou numéro<br>
-            <strong>Exemples:</strong> "Écoles de Gravelle", "RER A", "Bus 111", "Joinville"
-        </div>
-        <div class="search-box">
-            <input type="text" id="advanced-search" placeholder="Ex: Écoles de Gravelle, RER A, Bus 111...">
-            <button onclick="advancedSearch()">Chercher</button>
-        </div>
-        <div id="advanced-results"></div>
-    </div>
-
-    <!-- Direction Selection (Hidden initially) -->
-    <div class="step-container" id="direction-selection-container" style="display: none;">
-        <h2 class="step-title">Sélectionner la direction</h2>
-        <div id="selected-stop-info"></div>
-        <div id="directions-container"></div>
-        <div class="button-group">
-            <button class="btn btn-secondary" onclick="backToSearch()">← Nouvelle recherche</button>
-            <button class="btn btn-primary" onclick="addToConfig()">Ajouter au Dashboard</button>
-        </div>
-    </div>
-        <!-- Progress Indicator -->
-        <div class="progress-indicator">
-            <div class="progress-step active" data-step="1">
-                <div class="progress-circle">1</div>
-                <div class="progress-label">Adresse</div>
-            </div>
-            <div class="progress-step" data-step="2">
-                <div class="progress-circle">2</div>
-                <div class="progress-label">Arrêt</div>
-            </div>
-            <div class="progress-step" data-step="3">
-                <div class="progress-circle">3</div>
-                <div class="progress-label">Lignes</div>
-            </div>
-            <div class="progress-step" data-step="4">
-                <div class="progress-circle">4</div>
-                <div class="progress-label">Directions</div>
+    <div class="brutal-container">
+        <!-- API Key Section -->
+        <div class="brutal-panel">
+            <div class="panel-header">CLÉ API IDFM</div>
+            <div class="panel-body">
+                <div class="input-group">
+                    <label>VOTRE CLÉ API</label>
+                    <input type="text" id="api-key" placeholder="Entrez votre clé...">
+                </div>
+                <button class="btn btn-primary" onclick="validateKey()">VALIDER LA CLÉ</button>
+                <div id="api-status"></div>
+                <p style="margin-top: 20px; font-size: 0.9rem;">
+                    Obtenez votre clé gratuite sur 
+                    <a href="https://prim.iledefrance-mobilites.fr" target="_blank" style="color: #000; font-weight: bold; text-decoration: underline;">
+                        prim.iledefrance-mobilites.fr
+                    </a>
+                </p>
             </div>
         </div>
 
-        <!-- Step Container -->
-        <div class="step-container">
-            <!-- Step 1: Search Address -->
-            <div class="step-content active" id="step-1">
-                <h2 class="step-title">Étape 1 : Rechercher une adresse</h2>
-                <div class="info-message">
-                    💡 <strong>Conseil:</strong> Soyez précis pour de meilleurs résultats<br>
-                    Exemples: "10 Rue de Rivoli, Paris", "Saint-Maurice 94410", "Gare de Lyon"
+        <!-- Search Section -->
+        <div class="brutal-panel">
+            <div class="panel-header">RECHERCHE ARRÊT / LIGNE</div>
+            <div class="panel-body">
+                <div class="info-brutal info" style="margin-bottom: 20px;">
+                    <strong>EXEMPLES:</strong> "Écoles de Gravelle", "RER A", "Bus 111", "Joinville"
                 </div>
-                <div class="search-box">
-                    <input type="text" id="address-search" placeholder="Ex: 260 Rue du Maréchal Leclerc, Saint-Maurice 94410">
-                    <button onclick="searchAddress()">Chercher</button>
+                <div class="search-brutal">
+                    <input 
+                        type="text" 
+                        id="search-input" 
+                        placeholder="NOM DE L'ARRÊT OU DE LA LIGNE..."
+                        onkeypress="if(event.key==='Enter') doSearch()">
+                    <button onclick="doSearch()">CHERCHER</button>
                 </div>
-                <div class="map-container">
-                    <div id="map"></div>
-                </div>
-                <div id="nearby-stops-container"></div>
+                <div id="results" class="results-brutal"></div>
             </div>
+        </div>
 
-            <!-- Step 2: Select Stop -->
-            <div class="step-content" id="step-2">
-                <h2 class="step-title">Étape 2 : Choisir un arrêt</h2>
-                <div class="info-message">
-                    Sélectionnez l'arrêt où vous souhaitez suivre les transports
-                </div>
-                <div class="selection-list" id="stops-list"></div>
-                <div class="button-group">
-                    <button class="btn btn-secondary" onclick="goToStep(1)">← Retour</button>
-                    <button class="btn btn-primary" id="step2-continue" disabled onclick="goToStep(3)">Continuer →</button>
-                </div>
-            </div>
-
-            <!-- Step 3: Select Lines -->
-            <div class="step-content" id="step-3">
-                <h2 class="step-title">Étape 3 : Choisir les lignes</h2>
-                <div class="info-message">
-                    Sélectionnez une ou plusieurs lignes à suivre
-                </div>
-                <div class="selection-list" id="lines-list"></div>
-                <div class="button-group">
-                    <button class="btn btn-secondary" onclick="goToStep(2)">← Retour</button>
-                    <button class="btn btn-primary" id="step3-continue" disabled onclick="goToStep(4)">Continuer →</button>
-                </div>
-            </div>
-
-            <!-- Step 4: Select Directions -->
-            <div class="step-content" id="step-4">
-                <h2 class="step-title">Étape 4 : Choisir les directions</h2>
-                <div class="info-message">
-                    Sélectionnez la direction pour chaque ligne
-                </div>
-                <div id="directions-container"></div>
-                <div class="button-group">
-                    <button class="btn btn-secondary" onclick="goToStep(3)">← Retour</button>
-                    <button class="btn btn-primary" onclick="addToConfig()">Ajouter au Dashboard</button>
-                    <button class="btn btn-secondary" onclick="goToStep(3)">Ajouter d'autres lignes</button>
+        <!-- Direction Selection (Hidden initially) -->
+        <div id="direction-panel" style="display: none;">
+            <div class="brutal-panel">
+                <div class="panel-header">SÉLECTION DIRECTION</div>
+                <div class="panel-body">
+                    <div id="stop-info"></div>
+                    <div id="directions" class="direction-brutal"></div>
+                    <div class="button-group">
+                        <button class="btn" onclick="backToSearch()">← NOUVELLE RECHERCHE</button>
+                        <button class="btn btn-success" onclick="saveConfig()">✓ AJOUTER</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Tab Content: Advanced -->
-    <div id="advanced-tab" class="tab-content">
-        <div class="step-container">
-            <h2 class="step-title">Recherche Avancée</h2>
-            <div class="info-message">
-                Pour utilisateurs avancés : recherchez directement par nom de ligne ou d'arrêt
-            </div>
-            <div class="search-box">
-                <input type="text" id="advanced-search" placeholder="Ex: RER A, Bus 111, Joinville">
-                <button onclick="advancedSearch()">Chercher</button>
-            </div>
-            <div id="advanced-results"></div>
-        </div>
-    </div>
+    <script>
+        // State
+        let state = {
+            selectedStop: null,
+            selectedLine: null,
+            selectedDirection: null,
+            selectedDirectionId: null,
+            results: []
+        };
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
-            integrity="sha384-+Hgd6j9fYKwJfDqxaeHQfIf8Z4V+bZ0KDnf/4x4cYOXGGgPDmvDmFmYRJXdcYbV/" 
-            crossorigin=""></script>
-    <script src="/static/setup-wizard.js"></script>
+        // Load API key on start
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const res = await fetch('/api/config');
+                const data = await res.json();
+                if (data.api_key) {
+                    document.getElementById('api-key').value = data.api_key;
+                    showStatus('valid', '✓ CLÉ API VALIDE');
+                }
+            } catch (e) {
+                console.error('Load error:', e);
+            }
+        });
+
+        // Validate API key
+        async function validateKey() {
+            const key = document.getElementById('api-key').value.trim();
+            if (!key) {
+                showToast('VEUILLEZ ENTRER UNE CLÉ API', 'error');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/config/validate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({api_key: key})
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    showStatus('valid', '✓ CLÉ API VALIDE ET SAUVEGARDÉE');
+                    showToast('CLÉ API VALIDÉE!', 'success');
+                } else {
+                    showStatus('invalid', '✗ CLÉ API INVALIDE');
+                    showToast('CLÉ API INVALIDE', 'error');
+                }
+            } catch (e) {
+                console.error('Validation error:', e);
+                showToast('ERREUR DE VALIDATION', 'error');
+            }
+        }
+
+        // Search
+        async function doSearch() {
+            const query = document.getElementById('search-input').value.trim();
+            if (!query) {
+                showToast('ENTREZ UN TERME DE RECHERCHE', 'error');
+                return;
+            }
+
+            const container = document.getElementById('results');
+            container.innerHTML = '<div class="loading-brutal">RECHERCHE EN COURS</div>';
+
+            try {
+                const res = await fetch(`/api/search/stops?q=${encodeURIComponent(query)}`);
+                const data = await res.json();
+
+                if (data.error) {
+                    container.innerHTML = `<div class="info-brutal error">${escapeHtml(data.error)}</div>`;
+                    return;
+                }
+
+                const results = data.results || [];
+                state.results = results;
+
+                if (results.length === 0) {
+                    container.innerHTML = '<div class="info-brutal warning">AUCUN RÉSULTAT. ESSAYEZ UN AUTRE TERME.</div>';
+                    return;
+                }
+
+                container.innerHTML = results.map((r, i) => `
+                    <div class="result-card" onclick="selectResult(${i})">
+                        <div class="line-badge ${r.transport_type}">
+                            ${escapeHtml(r.line_name)}
+                        </div>
+                        <div class="result-info">
+                            <div class="result-name">${escapeHtml(r.stop_name)}</div>
+                            <div class="result-meta">${escapeHtml(r.line_name)} • ${escapeHtml(r.town || '')}</div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error('Search error:', e);
+                container.innerHTML = '<div class="info-brutal error">ERREUR DE RECHERCHE</div>';
+            }
+        }
+
+        // Select result
+        async function selectResult(index) {
+            const result = state.results[index];
+            if (!result) return;
+
+            console.log('Selected result:', result);
+
+            state.selectedStop = {
+                stop_id: result.stop_id,
+                stop_name: result.stop_name,
+                town: result.town || ''
+            };
+
+            state.selectedLine = {
+                line_id: result.line_id,
+                line_name: result.line_name,
+                mode: result.transport_type || 'Bus'
+            };
+
+            document.getElementById('stop-info').innerHTML = `
+                <div class="info-brutal info">
+                    <strong>ARRÊT:</strong> ${escapeHtml(result.stop_name)}<br>
+                    <strong>LIGNE:</strong> ${escapeHtml(result.line_name)}
+                </div>
+            `;
+
+            document.getElementById('direction-panel').style.display = 'block';
+            document.getElementById('direction-panel').scrollIntoView({behavior: 'smooth'});
+
+            const container = document.getElementById('directions');
+            container.innerHTML = '<div class="loading-brutal">CHARGEMENT DIRECTIONS</div>';
+
+            console.log('Fetching directions for:', {
+                stop_id: result.stop_id,
+                line_id: result.line_id
+            });
+
+            try {
+                const res = await fetch(`/api/stop/directions?stop_id=${encodeURIComponent(result.stop_id)}&line_id=${encodeURIComponent(result.line_id)}`);
+                const data = await res.json();
+                const directions = data.directions || [];
+
+                console.log('API returned directions:', directions);
+
+                if (directions.length > 0) {
+                    container.innerHTML = `
+                        <div class="info-brutal success" style="margin-bottom: 20px;">
+                            ✓ ${directions.length} DIRECTION(S) DISPONIBLE(S)
+                        </div>
+                        ${directions.map((d, i) => `
+                            <div class="direction-card" onclick="selectDirection('${escapeHtml(d.direction)}', '${escapeHtml(d.direction_id || '')}', this)">
+                                <input type="radio" name="direction" value="${i}">
+                                <span class="direction-text">→ ${escapeHtml(d.direction)}</span>
+                            </div>
+                        `).join('')}
+                    `;
+                    state.selectedDirection = null;
+                    state.selectedDirectionId = null;
+                } else {
+                    const fallbackDirection = `${result.line_name} - TOUTES DIRECTIONS`;
+                    container.innerHTML = `
+                        <div class="info-brutal warning" style="margin-bottom: 20px;">
+                            ⚠️ AUCUNE DIRECTION TEMPS RÉEL<br><br>
+                            <strong>LIGNE AJOUTÉE SANS FILTRE DE DIRECTION</strong><br>
+                            AFFICHERA TOUS LES DÉPARTS
+                        </div>
+                        <div class="direction-card selected">
+                            <input type="radio" name="direction" checked value="0">
+                            <span class="direction-text">→ ${escapeHtml(fallbackDirection)}</span>
+                        </div>
+                    `;
+                    state.selectedDirection = fallbackDirection;
+                    state.selectedDirectionId = null;
+                    console.log('Fallback direction set:', fallbackDirection);
+                }
+            } catch (e) {
+                console.error('Direction error:', e);
+                container.innerHTML = '<div class="info-brutal error">ERREUR CHARGEMENT DIRECTIONS</div>';
+            }
+        }
+
+        function selectDirection(direction, directionId, element) {
+            console.log('Direction selected:', direction, 'ID:', directionId);
+            
+            document.querySelectorAll('.direction-card').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            element.querySelector('input').checked = true;
+            
+            state.selectedDirection = direction;
+            state.selectedDirectionId = directionId || null;
+            
+            console.log('State updated:', state);
+        }
+
+        async function saveConfig() {
+            console.log('Saving config with state:', state);
+            
+            if (!state.selectedDirection) {
+                showToast('SÉLECTIONNEZ UNE DIRECTION', 'error');
+                return;
+            }
+
+            if (!state.selectedStop || !state.selectedLine) {
+                showToast('INFORMATIONS MANQUANTES', 'error');
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('stop_id', state.selectedStop.stop_id);
+                formData.append('stop_name', state.selectedStop.stop_name);
+                formData.append('line', state.selectedLine.line_name);
+                formData.append('direction', state.selectedDirection);
+                formData.append('transport_type', state.selectedLine.mode || 'Bus');
+                
+                if (state.selectedLine.line_id) {
+                    formData.append('line_id', state.selectedLine.line_id);
+                }
+                
+                if (state.selectedDirectionId) {
+                    formData.append('direction_id', state.selectedDirectionId);
+                }
+
+                console.log('Sending to /api/stops/add');
+
+                const saveRes = await fetch('/api/stops/add', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await saveRes.json();
+
+                if (saveRes.ok && result.success) {
+                    showToast('LIGNE AJOUTÉE!', 'success');
+                    setTimeout(() => {
+                        if (confirm('LIGNE AJOUTÉE! EN AJOUTER UNE AUTRE?')) {
+                            backToSearch();
+                        } else {
+                            window.location.href = '/';
+                        }
+                    }, 1000);
+                } else {
+                    console.error('Save failed:', result);
+                    showToast(result.message || 'ERREUR', 'error');
+                }
+            } catch (e) {
+                console.error('Save error:', e);
+                showToast('ERREUR: ' + e.message, 'error');
+            }
+        }
+
+        function backToSearch() {
+            state.selectedStop = null;
+            state.selectedLine = null;
+            state.selectedDirection = null;
+            state.selectedDirectionId = null;
+            document.getElementById('direction-panel').style.display = 'none';
+            document.getElementById('search-input').value = '';
+            document.getElementById('results').innerHTML = '';
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text || '';
+            return div.innerHTML;
+        }
+
+        function showStatus(type, message) {
+            const status = document.getElementById('api-status');
+            status.className = `api-status ${type}`;
+            status.textContent = message;
+        }
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = `toast-brutal ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
 </body>
 </html>

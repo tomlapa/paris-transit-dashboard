@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CONFIGURATION - TRANSIT</title>
+    <title>SETUP - TRANSIT DASHBOARD</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     
     <style>
         * {
@@ -13,234 +16,245 @@
         }
         
         body {
-            background: #FFFFFF;
+            background: #0066FF;
             color: #000000;
-            font-family: 'Courier New', monospace;
+            font-family: 'Inter', sans-serif;
             min-height: 100vh;
-            padding: 0;
+            position: relative;
+            overflow-x: hidden;
         }
         
-        /* Brutalist Header */
-        .brutal-header {
-            background: #000000;
-            color: #FFFFFF;
-            padding: 30px;
-            border-bottom: 5px solid #FFFF00;
+        /* Floating doodles */
+        .doodle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 0;
+            animation: float 6s ease-in-out infinite;
         }
         
-        .brutal-header h1 {
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        
+        .doodle-star {
+            top: 10%;
+            right: 10%;
             font-size: 3rem;
-            font-weight: 900;
-            letter-spacing: 4px;
-            text-transform: uppercase;
+            animation-delay: 0s;
         }
         
-        .brutal-header .subtitle {
-            font-size: 1rem;
-            margin-top: 10px;
-            letter-spacing: 2px;
-            color: #FFFF00;
+        .doodle-check {
+            top: 40%;
+            left: 8%;
+            font-size: 2.5rem;
+            color: #BFFF00;
+            animation-delay: 1.5s;
+        }
+        
+        .doodle-arrow {
+            bottom: 25%;
+            right: 12%;
+            font-size: 4rem;
+            color: #FF69B4;
+            animation-delay: 2.5s;
+            transform: rotate(15deg);
+        }
+        
+        /* Header */
+        .header {
+            background: #000000;
+            padding: 25px 30px;
+            border-bottom: 8px solid #FFFF00;
+            box-shadow: 0 8px 0 rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 10;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 900;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #FFFFFF;
+            text-shadow: 3px 3px 0 #00D9FF;
+        }
+        
+        .btn-dashboard {
+            background: #BFFF00;
+            color: #000000;
+            padding: 15px 30px;
+            border: 5px solid #000000;
+            font-size: 1.1rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 5px 5px 0 rgba(0,0,0,0.4);
+            transition: all 0.2s;
+            letter-spacing: 1px;
+        }
+        
+        .btn-dashboard:hover {
+            transform: translate(-3px, -3px);
+            box-shadow: 8px 8px 0 rgba(0,0,0,0.5);
+            background: #FF69B4;
         }
         
         /* Container */
-        .brutal-container {
-            max-width: 1000px;
+        .container {
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 30px;
-        }
-        
-        /* Panel */
-        .brutal-panel {
-            background: #FFFFFF;
-            border: 5px solid #000000;
-            margin-bottom: 30px;
+            padding: 40px 20px;
             position: relative;
+            z-index: 1;
         }
         
-        .panel-header {
-            background: #000000;
-            color: #FFFF00;
-            padding: 15px 20px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            border-bottom: 3px solid #FFFF00;
+        /* Setup wizard */
+        .wizard {
+            background: #FFFFFF;
+            border: 8px solid #000000;
+            box-shadow: 12px 12px 0 rgba(0,0,0,0.4);
+            margin-bottom: 40px;
         }
         
-        .panel-body {
+        .wizard-header {
+            background: #FFFF00;
             padding: 30px;
+            border-bottom: 6px solid #000000;
         }
         
-        /* Input Groups */
-        .input-group {
-            margin: 20px 0;
-        }
-        
-        .input-group label {
-            display: block;
-            font-weight: bold;
+        .wizard-header h2 {
+            font-size: 2rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
             margin-bottom: 10px;
+        }
+        
+        .wizard-header p {
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+        
+        .wizard-content {
+            padding: 40px;
+        }
+        
+        /* Form elements */
+        .form-group {
+            margin-bottom: 30px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 0.95rem;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
-            font-size: 0.9rem;
-        }
-        
-        .input-group input {
-            width: 100%;
-            padding: 15px;
-            border: 3px solid #000000;
-            background: #FFFFFF;
-            font-family: 'Courier New', monospace;
-            font-size: 1rem;
-            font-weight: bold;
-        }
-        
-        .input-group input:focus {
-            outline: none;
-            border-color: #FFFF00;
-            box-shadow: 0 0 0 3px #FFFF00;
-        }
-        
-        /* Buttons */
-        .btn {
-            padding: 15px 30px;
-            border: 3px solid #000000;
-            background: #FFFFFF;
+            margin-bottom: 10px;
             color: #000000;
-            font-family: 'Courier New', monospace;
-            font-size: 1rem;
-            font-weight: bold;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 5px solid #000000;
+            font-size: 1.1rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            background: #FFFFFF;
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
+            transition: all 0.2s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            background: #FFFF00;
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 rgba(0,0,0,0.3);
+        }
+        
+        .btn {
+            padding: 15px 35px;
+            border: 5px solid #000000;
+            font-size: 1.1rem;
+            font-weight: 900;
             text-transform: uppercase;
-            letter-spacing: 2px;
             cursor: pointer;
-            transition: all 0.1s;
-        }
-        
-        .btn:hover {
-            background: #000000;
-            color: #FFFFFF;
-        }
-        
-        .btn:active {
-            transform: translate(2px, 2px);
+            font-family: 'Inter', sans-serif;
+            box-shadow: 5px 5px 0 rgba(0,0,0,0.3);
+            transition: all 0.2s;
+            letter-spacing: 1px;
         }
         
         .btn-primary {
-            background: #FFFF00;
-            border-color: #000000;
+            background: #00D9FF;
+            color: #000000;
         }
         
         .btn-primary:hover {
-            background: #000000;
-            color: #FFFF00;
+            background: #FF69B4;
+            transform: translate(-3px, -3px);
+            box-shadow: 8px 8px 0 rgba(0,0,0,0.4);
         }
         
         .btn-success {
-            background: #00FF00;
+            background: #BFFF00;
+            color: #000000;
         }
         
         .btn-success:hover {
-            background: #000000;
-            color: #00FF00;
-        }
-        
-        .btn-danger {
-            background: #FF0000;
-            color: #FFFFFF;
-        }
-        
-        .btn-danger:hover {
-            background: #000000;
-            color: #FF0000;
-        }
-        
-        /* Search Box */
-        .search-brutal {
-            position: relative;
-            display: flex;
-            gap: 0;
-        }
-        
-        .search-brutal input {
-            flex: 1;
-            padding: 20px;
-            border: 5px solid #000000;
-            border-right: none;
-            font-family: 'Courier New', monospace;
-            font-size: 1.1rem;
-            font-weight: bold;
-        }
-        
-        .search-brutal button {
-            padding: 20px 40px;
-            border: 5px solid #000000;
             background: #FFFF00;
-            font-family: 'Courier New', monospace;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
+            transform: translate(-3px, -3px);
+            box-shadow: 8px 8px 0 rgba(0,0,0,0.4);
         }
         
-        .search-brutal button:hover {
-            background: #000000;
-            color: #FFFF00;
+        /* Search results */
+        .search-results {
+            margin-top: 20px;
+            border: 5px solid #000000;
+            background: #F5F5F5;
+            max-height: 400px;
+            overflow-y: auto;
         }
         
-        /* Results */
-        .results-brutal {
-            margin-top: 30px;
-        }
-        
-        .result-card {
-            border: 4px solid #000000;
-            background: #FFFFFF;
-            margin-bottom: 15px;
+        .search-result-item {
             padding: 20px;
+            border-bottom: 3px solid #DDDDDD;
             cursor: pointer;
-            transition: all 0.1s;
+            transition: all 0.15s;
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 20px;
         }
         
-        .result-card:hover {
+        .search-result-item:hover {
+            background: #00D9FF;
+            transform: translateX(-5px);
+        }
+        
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .result-line {
+            display: inline-block;
+            padding: 8px 16px;
             background: #FFFF00;
-            transform: translate(-5px, -5px);
-            box-shadow: 5px 5px 0 #000000;
-        }
-        
-        .line-badge {
-            width: 80px;
-            height: 80px;
-            border: 4px solid #000000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
+            border: 3px solid #000000;
             font-weight: 900;
-            flex-shrink: 0;
-        }
-        
-        .line-badge.bus {
-            background: #4CAF50;
-            color: #FFFFFF;
-        }
-        
-        .line-badge.metro {
-            background: #2196F3;
-            color: #FFFFFF;
-        }
-        
-        .line-badge.rer {
-            background: #9C27B0;
-            color: #FFFFFF;
-        }
-        
-        .line-badge.tram {
-            background: #FF9800;
-            color: #000000;
+            font-size: 1.3rem;
+            margin-right: 15px;
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.2);
         }
         
         .result-info {
@@ -248,10 +262,9 @@
         }
         
         .result-name {
-            font-size: 1.3rem;
-            font-weight: bold;
+            font-weight: 700;
+            font-size: 1.1rem;
             margin-bottom: 5px;
-            text-transform: uppercase;
         }
         
         .result-meta {
@@ -259,467 +272,454 @@
             color: #666666;
         }
         
-        /* Direction Selection */
-        .direction-brutal {
-            margin: 20px 0;
+        /* Direction selector */
+        .direction-selector {
+            margin-top: 30px;
+            padding: 30px;
+            background: #00D9FF;
+            border: 6px solid #000000;
+            box-shadow: 6px 6px 0 rgba(0,0,0,0.3);
         }
         
-        .direction-card {
-            border: 4px solid #000000;
-            background: #FFFFFF;
-            padding: 20px;
-            margin-bottom: 15px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            transition: all 0.1s;
+        .direction-selector h3 {
+            font-size: 1.5rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
         }
         
-        .direction-card:hover {
-            background: #FFFF00;
-        }
-        
-        .direction-card.selected {
+        .direction-option {
+            padding: 15px 20px;
             background: #000000;
             color: #FFFFFF;
+            border: 4px solid #000000;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            font-weight: 700;
+            font-size: 1.05rem;
         }
         
-        .direction-card input[type="radio"] {
-            width: 30px;
-            height: 30px;
-            border: 3px solid #000000;
+        .direction-option:hover {
+            background: #FFFFFF;
+            color: #000000;
+            transform: translateX(-5px);
+        }
+        
+        .direction-option input {
+            margin-right: 15px;
+            width: 24px;
+            height: 24px;
             cursor: pointer;
         }
         
-        .direction-text {
-            font-size: 1.1rem;
-            font-weight: bold;
-            text-transform: uppercase;
+        .direction-option.selected {
+            background: #FFFFFF;
+            color: #000000;
+            border-color: #BFFF00;
+            border-width: 5px;
         }
         
-        /* Info Boxes */
-        .info-brutal {
-            padding: 20px;
-            border: 4px solid #000000;
-            margin: 20px 0;
-            font-weight: bold;
+        /* Alert messages */
+        .alert {
+            padding: 20px 25px;
+            border: 5px solid #000000;
+            margin-bottom: 25px;
+            font-weight: 700;
+            box-shadow: 5px 5px 0 rgba(0,0,0,0.3);
         }
         
-        .info-brutal.success {
-            background: #00FF00;
+        .alert-success {
+            background: #BFFF00;
+            color: #000000;
         }
         
-        .info-brutal.warning {
+        .alert-error {
+            background: #FF69B4;
+            color: #000000;
+        }
+        
+        .alert-info {
             background: #FFFF00;
+            color: #000000;
         }
         
-        .info-brutal.error {
+        /* Added stops */
+        .added-stops {
+            margin-top: 40px;
+        }
+        
+        .added-stops h3 {
+            font-size: 1.8rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+        
+        .stop-item {
+            background: #FFFFFF;
+            border: 5px solid #000000;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 5px 5px 0 rgba(0,0,0,0.2);
+        }
+        
+        .stop-item-line {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #FFFF00;
+            border: 4px solid #000000;
+            font-weight: 900;
+            font-size: 1.5rem;
+            margin-right: 15px;
+        }
+        
+        .btn-delete {
             background: #FF0000;
             color: #FFFFFF;
+            padding: 10px 20px;
+            border: 4px solid #000000;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.3);
         }
         
-        .info-brutal.info {
-            background: #00BFFF;
+        .btn-delete:hover {
+            transform: scale(1.1);
+            box-shadow: 5px 5px 0 rgba(0,0,0,0.4);
         }
         
         /* Loading */
-        .loading-brutal {
+        .loading {
             text-align: center;
-            padding: 40px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 3px;
+            padding: 30px;
+            font-weight: 700;
+            font-size: 1.2rem;
         }
         
-        .loading-brutal::after {
-            content: '...';
-            animation: dots 1.5s steps(4) infinite;
+        .loading::before {
+            content: '⚡';
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 10px;
+            animation: pulse 1s ease-in-out infinite;
         }
         
-        @keyframes dots {
-            0%, 20% { content: '.'; }
-            40% { content: '..'; }
-            60%, 100% { content: '...'; }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
         }
         
-        /* Toast */
-        .toast-brutal {
-            position: fixed;
-            top: 30px;
-            right: 30px;
-            padding: 20px 30px;
-            border: 5px solid #000000;
-            font-weight: bold;
-            text-transform: uppercase;
-            z-index: 10000;
-            animation: slideInRight 0.3s;
-        }
-        
-        @keyframes slideInRight {
-            from { transform: translateX(400px); }
-            to { transform: translateX(0); }
-        }
-        
-        .toast-brutal.success {
-            background: #00FF00;
-        }
-        
-        .toast-brutal.error {
-            background: #FF0000;
-            color: #FFFFFF;
-        }
-        
-        /* API Status */
-        .api-status {
-            display: inline-block;
-            padding: 10px 20px;
-            border: 3px solid #000000;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-        
-        .api-status.valid {
-            background: #00FF00;
-        }
-        
-        .api-status.invalid {
-            background: #FF0000;
-            color: #FFFFFF;
-        }
-        
-        /* Button Group */
-        .button-group {
-            display: flex;
-            gap: 15px;
-            margin-top: 30px;
-        }
-        
-        .button-group .btn {
-            flex: 1;
+        /* Hidden */
+        .hidden {
+            display: none !important;
         }
     </style>
 </head>
 <body>
-    <div class="brutal-header">
-        <h1>🚇 TRANSIT</h1>
-        <div class="subtitle">CONFIGURATION DU SYSTÈME</div>
+    <!-- Floating doodles -->
+    <div class="doodle doodle-star">✨</div>
+    <div class="doodle doodle-check">✓</div>
+    <div class="doodle doodle-arrow">↗</div>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <h1>⚙ CONFIGURATION</h1>
+            <a href="/" class="btn-dashboard">→ VOIR LE DASHBOARD</a>
+        </div>
     </div>
 
-    <div class="brutal-container">
-        <!-- API Key Section -->
-        <div class="brutal-panel">
-            <div class="panel-header">CLÉ API IDFM</div>
-            <div class="panel-body">
-                <div class="input-group">
-                    <label>VOTRE CLÉ API</label>
-                    <input type="text" id="api-key" placeholder="Entrez votre clé...">
+    <!-- Main content -->
+    <div class="container">
+        <!-- Step 1: API Key -->
+        <div class="wizard" id="step-apikey">
+            <div class="wizard-header">
+                <h2>1. CLÉ API IDFM</h2>
+                <p>Obtenez votre clé sur prim.iledefrance-mobilites.fr</p>
+            </div>
+            <div class="wizard-content">
+                <div id="apikey-alerts"></div>
+                
+                <div class="form-group">
+                    <label class="form-label">Clé API</label>
+                    <input type="text" id="apikey-input" class="form-input" placeholder="Entrez votre clé API...">
                 </div>
-                <button class="btn btn-primary" onclick="validateKey()">VALIDER LA CLÉ</button>
-                <div id="api-status"></div>
-                <p style="margin-top: 20px; font-size: 0.9rem;">
-                    Obtenez votre clé gratuite sur 
-                    <a href="https://prim.iledefrance-mobilites.fr" target="_blank" style="color: #000; font-weight: bold; text-decoration: underline;">
-                        prim.iledefrance-mobilites.fr
-                    </a>
-                </p>
+                
+                <button class="btn btn-primary" onclick="validateApiKey()">VALIDER LA CLÉ</button>
             </div>
         </div>
 
-        <!-- Search Section -->
-        <div class="brutal-panel">
-            <div class="panel-header">RECHERCHE ARRÊT / LIGNE</div>
-            <div class="panel-body">
-                <div class="info-brutal info" style="margin-bottom: 20px;">
-                    <strong>EXEMPLES:</strong> "Écoles de Gravelle", "RER A", "Bus 111", "Joinville"
-                </div>
-                <div class="search-brutal">
-                    <input 
-                        type="text" 
-                        id="search-input" 
-                        placeholder="NOM DE L'ARRÊT OU DE LA LIGNE..."
-                        onkeypress="if(event.key==='Enter') doSearch()">
-                    <button onclick="doSearch()">CHERCHER</button>
-                </div>
-                <div id="results" class="results-brutal"></div>
+        <!-- Step 2: Add Stops -->
+        <div class="wizard hidden" id="step-stops">
+            <div class="wizard-header">
+                <h2>2. AJOUTER DES ARRÊTS</h2>
+                <p>Recherchez et ajoutez vos arrêts favoris</p>
             </div>
-        </div>
-
-        <!-- Direction Selection (Hidden initially) -->
-        <div id="direction-panel" style="display: none;">
-            <div class="brutal-panel">
-                <div class="panel-header">SÉLECTION DIRECTION</div>
-                <div class="panel-body">
-                    <div id="stop-info"></div>
-                    <div id="directions" class="direction-brutal"></div>
-                    <div class="button-group">
-                        <button class="btn" onclick="backToSearch()">← NOUVELLE RECHERCHE</button>
-                        <button class="btn btn-success" onclick="saveConfig()">✓ AJOUTER</button>
-                    </div>
+            <div class="wizard-content">
+                <div id="stops-alerts"></div>
+                
+                <div class="form-group">
+                    <label class="form-label">Rechercher un arrêt</label>
+                    <input type="text" id="search-input" class="form-input" placeholder="Nom de l'arrêt..." oninput="searchStops()">
+                </div>
+                
+                <div id="search-results" class="hidden"></div>
+                <div id="direction-selector" class="hidden"></div>
+                
+                <div class="added-stops hidden" id="added-stops">
+                    <h3>Arrêts ajoutés</h3>
+                    <div id="stops-list"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // State
-        let state = {
-            selectedStop: null,
-            selectedLine: null,
-            selectedDirection: null,
-            selectedDirectionId: null,
-            results: []
-        };
+        let currentConfig = null;
+        let selectedStop = null;
+        let searchTimeout = null;
 
-        // Load API key on start
-        window.addEventListener('DOMContentLoaded', async () => {
+        async function loadConfig() {
             try {
-                const res = await fetch('/api/config');
-                const data = await res.json();
-                if (data.api_key) {
-                    document.getElementById('api-key').value = data.api_key;
-                    showStatus('valid', '✓ CLÉ API VALIDE');
+                const response = await fetch('/api/config');
+                currentConfig = await response.json();
+                
+                if (currentConfig.api_key) {
+                    document.getElementById('apikey-input').value = currentConfig.api_key;
+                    showStep('stops');
+                }
+                
+                if (currentConfig.stops && currentConfig.stops.length > 0) {
+                    renderAddedStops();
                 }
             } catch (e) {
-                console.error('Load error:', e);
+                console.error('Load config error:', e);
             }
-        });
+        }
 
-        // Validate API key
-        async function validateKey() {
-            const key = document.getElementById('api-key').value.trim();
-            if (!key) {
-                showToast('VEUILLEZ ENTRER UNE CLÉ API', 'error');
+        async function validateApiKey() {
+            const apikey = document.getElementById('apikey-input').value.trim();
+            
+            if (!apikey) {
+                showAlert('apikey-alerts', 'Veuillez entrer une clé API', 'error');
                 return;
             }
-
+            
             try {
-                const res = await fetch('/api/config/validate', {
+                const response = await fetch('/api/config/validate', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({api_key: key})
+                    body: JSON.stringify({api_key: apikey})
                 });
-                const data = await res.json();
                 
-                if (data.success) {
-                    showStatus('valid', '✓ CLÉ API VALIDE ET SAUVEGARDÉE');
-                    showToast('CLÉ API VALIDÉE!', 'success');
+                const result = await response.json();
+                
+                if (result.valid) {
+                    showAlert('apikey-alerts', '✓ Clé API valide !', 'success');
+                    currentConfig = {api_key: apikey, stops: []};
+                    setTimeout(() => showStep('stops'), 1000);
                 } else {
-                    showStatus('invalid', '✗ CLÉ API INVALIDE');
-                    showToast('CLÉ API INVALIDE', 'error');
+                    showAlert('apikey-alerts', '✗ Clé API invalide', 'error');
                 }
             } catch (e) {
-                console.error('Validation error:', e);
-                showToast('ERREUR DE VALIDATION', 'error');
+                showAlert('apikey-alerts', '✗ Erreur de validation', 'error');
             }
         }
 
-        // Search
-        async function doSearch() {
+        function searchStops() {
+            clearTimeout(searchTimeout);
             const query = document.getElementById('search-input').value.trim();
-            if (!query) {
-                showToast('ENTREZ UN TERME DE RECHERCHE', 'error');
+            
+            if (query.length < 2) {
+                document.getElementById('search-results').classList.add('hidden');
                 return;
             }
-
-            const container = document.getElementById('results');
-            container.innerHTML = '<div class="loading-brutal">RECHERCHE EN COURS</div>';
-
-            try {
-                const res = await fetch(`/api/search/stops?q=${encodeURIComponent(query)}`);
-                const data = await res.json();
-
-                if (data.error) {
-                    container.innerHTML = `<div class="info-brutal error">${escapeHtml(data.error)}</div>`;
-                    return;
+            
+            searchTimeout = setTimeout(async () => {
+                try {
+                    const response = await fetch(`/api/search/stops?q=${encodeURIComponent(query)}`);
+                    const results = await response.json();
+                    renderSearchResults(results);
+                } catch (e) {
+                    console.error('Search error:', e);
                 }
+            }, 300);
+        }
 
-                const results = data.results || [];
-                state.results = results;
-
-                if (results.length === 0) {
-                    container.innerHTML = '<div class="info-brutal warning">AUCUN RÉSULTAT. ESSAYEZ UN AUTRE TERME.</div>';
-                    return;
-                }
-
-                container.innerHTML = results.map((r, i) => `
-                    <div class="result-card" onclick="selectResult(${i})">
-                        <div class="line-badge ${r.transport_type}">
-                            ${escapeHtml(r.line_name)}
-                        </div>
-                        <div class="result-info">
-                            <div class="result-name">${escapeHtml(r.stop_name)}</div>
-                            <div class="result-meta">${escapeHtml(r.line_name)} • ${escapeHtml(r.town || '')}</div>
-                        </div>
+        function renderSearchResults(results) {
+            const container = document.getElementById('search-results');
+            
+            if (results.length === 0) {
+                container.innerHTML = '<div class="loading">Aucun résultat trouvé</div>';
+                container.classList.remove('hidden');
+                return;
+            }
+            
+            const html = results.map(r => `
+                <div class="search-result-item" onclick='selectStop(${JSON.stringify(r)})'>
+                    <div class="result-info">
+                        <div class="result-line">${escapeHtml(r.line_name)}</div>
+                        <div class="result-name">${escapeHtml(r.stop_name)}</div>
+                        <div class="result-meta">${escapeHtml(r.transport_type || 'bus').toUpperCase()}</div>
                     </div>
-                `).join('');
-            } catch (e) {
-                console.error('Search error:', e);
-                container.innerHTML = '<div class="info-brutal error">ERREUR DE RECHERCHE</div>';
-            }
-        }
-
-        // Select result
-        async function selectResult(index) {
-            const result = state.results[index];
-            if (!result) return;
-
-            console.log('Selected result:', result);
-
-            state.selectedStop = {
-                stop_id: result.stop_id,
-                stop_name: result.stop_name,
-                town: result.town || ''
-            };
-
-            state.selectedLine = {
-                line_id: result.line_id,
-                line_name: result.line_name,
-                mode: result.transport_type || 'Bus'
-            };
-
-            document.getElementById('stop-info').innerHTML = `
-                <div class="info-brutal info">
-                    <strong>ARRÊT:</strong> ${escapeHtml(result.stop_name)}<br>
-                    <strong>LIGNE:</strong> ${escapeHtml(result.line_name)}
                 </div>
+            `).join('');
+            
+            container.innerHTML = `<div class="search-results">${html}</div>`;
+            container.classList.remove('hidden');
+        }
+
+        async function selectStop(stop) {
+            selectedStop = stop;
+            document.getElementById('search-results').classList.add('hidden');
+            
+            try {
+                const response = await fetch(`/api/stop/directions?stop_id=${encodeURIComponent(stop.stop_id)}&line_id=${encodeURIComponent(stop.line_id)}`);
+                const data = await response.json();
+                
+                if (data.directions && data.directions.length > 0) {
+                    renderDirectionSelector(data.directions);
+                } else {
+                    await addStop(null);
+                }
+            } catch (e) {
+                console.error('Directions error:', e);
+                await addStop(null);
+            }
+        }
+
+        function renderDirectionSelector(directions) {
+            const container = document.getElementById('direction-selector');
+            
+            const html = `
+                <h3>SÉLECTION DIRECTION</h3>
+                <div class="alert alert-info">
+                    ⚠ AUCUNE DIRECTION TEMPS RÉEL<br><br>
+                    LIGNE AJOUTÉE SANS FILTRE DE DIRECTION<br>
+                    AFFICHERA TOUS LES DÉPARTS
+                </div>
+                <div class="direction-option" onclick="addStop(null)">
+                    <input type="radio" name="direction" checked>
+                    → ${escapeHtml(selectedStop.line_name)} - TOUTES DIRECTIONS
+                </div>
+                ${directions.map(dir => `
+                    <div class="direction-option" onclick="addStop('${escapeHtml(dir)}')">
+                        <input type="radio" name="direction">
+                        → ${escapeHtml(dir)}
+                    </div>
+                `).join('')}
+                <br>
+                <button class="btn btn-success" onclick="addStop(null)">✓ AJOUTER</button>
             `;
-
-            document.getElementById('direction-panel').style.display = 'block';
-            document.getElementById('direction-panel').scrollIntoView({behavior: 'smooth'});
-
-            const container = document.getElementById('directions');
-            container.innerHTML = '<div class="loading-brutal">CHARGEMENT DIRECTIONS</div>';
-
-            console.log('Fetching directions for:', {
-                stop_id: result.stop_id,
-                line_id: result.line_id
-            });
-
-            try {
-                const res = await fetch(`/api/stop/directions?stop_id=${encodeURIComponent(result.stop_id)}&line_id=${encodeURIComponent(result.line_id)}`);
-                const data = await res.json();
-                const directions = data.directions || [];
-
-                console.log('API returned directions:', directions);
-
-                if (directions.length > 0) {
-                    container.innerHTML = `
-                        <div class="info-brutal success" style="margin-bottom: 20px;">
-                            ✓ ${directions.length} DIRECTION(S) DISPONIBLE(S)
-                        </div>
-                        ${directions.map((d, i) => `
-                            <div class="direction-card" onclick="selectDirection('${escapeHtml(d.direction)}', '${escapeHtml(d.direction_id || '')}', this)">
-                                <input type="radio" name="direction" value="${i}">
-                                <span class="direction-text">→ ${escapeHtml(d.direction)}</span>
-                            </div>
-                        `).join('')}
-                    `;
-                    state.selectedDirection = null;
-                    state.selectedDirectionId = null;
-                } else {
-                    const fallbackDirection = `${result.line_name} - TOUTES DIRECTIONS`;
-                    container.innerHTML = `
-                        <div class="info-brutal warning" style="margin-bottom: 20px;">
-                            ⚠️ AUCUNE DIRECTION TEMPS RÉEL<br><br>
-                            <strong>LIGNE AJOUTÉE SANS FILTRE DE DIRECTION</strong><br>
-                            AFFICHERA TOUS LES DÉPARTS
-                        </div>
-                        <div class="direction-card selected">
-                            <input type="radio" name="direction" checked value="0">
-                            <span class="direction-text">→ ${escapeHtml(fallbackDirection)}</span>
-                        </div>
-                    `;
-                    state.selectedDirection = fallbackDirection;
-                    state.selectedDirectionId = null;
-                    console.log('Fallback direction set:', fallbackDirection);
-                }
-            } catch (e) {
-                console.error('Direction error:', e);
-                container.innerHTML = '<div class="info-brutal error">ERREUR CHARGEMENT DIRECTIONS</div>';
-            }
+            
+            container.innerHTML = html;
+            container.classList.remove('hidden');
         }
 
-        function selectDirection(direction, directionId, element) {
-            console.log('Direction selected:', direction, 'ID:', directionId);
+        async function addStop(direction) {
+            if (!selectedStop) return;
             
-            document.querySelectorAll('.direction-card').forEach(el => el.classList.remove('selected'));
-            element.classList.add('selected');
-            element.querySelector('input').checked = true;
+            const stopData = {
+                name: selectedStop.stop_name,
+                id: selectedStop.stop_id,
+                line: selectedStop.line_name,
+                line_id: selectedStop.line_id,
+                direction: direction || '',
+                transport_type: selectedStop.transport_type || 'bus'
+            };
             
-            state.selectedDirection = direction;
-            state.selectedDirectionId = directionId || null;
-            
-            console.log('State updated:', state);
-        }
-
-        async function saveConfig() {
-            console.log('Saving config with state:', state);
-            
-            if (!state.selectedDirection) {
-                showToast('SÉLECTIONNEZ UNE DIRECTION', 'error');
-                return;
-            }
-
-            if (!state.selectedStop || !state.selectedLine) {
-                showToast('INFORMATIONS MANQUANTES', 'error');
-                return;
-            }
-
             try {
-                const formData = new FormData();
-                formData.append('stop_id', state.selectedStop.stop_id);
-                formData.append('stop_name', state.selectedStop.stop_name);
-                formData.append('line', state.selectedLine.line_name);
-                formData.append('direction', state.selectedDirection);
-                formData.append('transport_type', state.selectedLine.mode || 'Bus');
-                
-                if (state.selectedLine.line_id) {
-                    formData.append('line_id', state.selectedLine.line_id);
-                }
-                
-                if (state.selectedDirectionId) {
-                    formData.append('direction_id', state.selectedDirectionId);
-                }
-
-                console.log('Sending to /api/stops/add');
-
-                const saveRes = await fetch('/api/stops/add', {
+                const response = await fetch('/api/stops/add', {
                     method: 'POST',
-                    body: formData
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(stopData)
                 });
-
-                const result = await saveRes.json();
-
-                if (saveRes.ok && result.success) {
-                    showToast('LIGNE AJOUTÉE!', 'success');
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('stops-alerts', '✓ Arrêt ajouté avec succès !', 'success');
+                    currentConfig = result.config;
+                    renderAddedStops();
+                    
+                    // Reset
+                    document.getElementById('search-input').value = '';
+                    document.getElementById('direction-selector').classList.add('hidden');
+                    selectedStop = null;
+                    
                     setTimeout(() => {
-                        if (confirm('LIGNE AJOUTÉE! EN AJOUTER UNE AUTRE?')) {
-                            backToSearch();
-                        } else {
-                            window.location.href = '/';
-                        }
-                    }, 1000);
+                        document.getElementById('stops-alerts').innerHTML = '';
+                    }, 2000);
                 } else {
-                    console.error('Save failed:', result);
-                    showToast(result.message || 'ERREUR', 'error');
+                    showAlert('stops-alerts', '✗ Erreur: ' + (result.error || 'Inconnue'), 'error');
                 }
             } catch (e) {
-                console.error('Save error:', e);
-                showToast('ERREUR: ' + e.message, 'error');
+                showAlert('stops-alerts', '✗ Erreur lors de l\'ajout', 'error');
             }
         }
 
-        function backToSearch() {
-            state.selectedStop = null;
-            state.selectedLine = null;
-            state.selectedDirection = null;
-            state.selectedDirectionId = null;
-            document.getElementById('direction-panel').style.display = 'none';
-            document.getElementById('search-input').value = '';
-            document.getElementById('results').innerHTML = '';
-            window.scrollTo({top: 0, behavior: 'smooth'});
+        async function deleteStop(index) {
+            if (!confirm('Supprimer cet arrêt ?')) return;
+            
+            try {
+                const response = await fetch(`/api/stops/delete/${index}`, {method: 'DELETE'});
+                const result = await response.json();
+                
+                if (result.success) {
+                    currentConfig = result.config;
+                    renderAddedStops();
+                    showAlert('stops-alerts', '✓ Arrêt supprimé', 'success');
+                    setTimeout(() => {
+                        document.getElementById('stops-alerts').innerHTML = '';
+                    }, 2000);
+                }
+            } catch (e) {
+                showAlert('stops-alerts', '✗ Erreur de suppression', 'error');
+            }
+        }
+
+        function renderAddedStops() {
+            const container = document.getElementById('added-stops');
+            const list = document.getElementById('stops-list');
+            
+            if (!currentConfig.stops || currentConfig.stops.length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+            
+            const html = currentConfig.stops.map((stop, idx) => `
+                <div class="stop-item">
+                    <div>
+                        <span class="stop-item-line">${escapeHtml(stop.line)}</span>
+                        <strong>${escapeHtml(stop.name)}</strong>
+                        ${stop.direction ? `<br><small>→ ${escapeHtml(stop.direction)}</small>` : ''}
+                    </div>
+                    <button class="btn-delete" onclick="deleteStop(${idx})">✖ SUPPRIMER</button>
+                </div>
+            `).join('');
+            
+            list.innerHTML = html;
+            container.classList.remove('hidden');
+        }
+
+        function showStep(step) {
+            document.getElementById('step-apikey').classList.add('hidden');
+            document.getElementById('step-stops').classList.add('hidden');
+            document.getElementById('step-' + step).classList.remove('hidden');
+        }
+
+        function showAlert(containerId, message, type) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
         }
 
         function escapeHtml(text) {
@@ -728,19 +728,7 @@
             return div.innerHTML;
         }
 
-        function showStatus(type, message) {
-            const status = document.getElementById('api-status');
-            status.className = `api-status ${type}`;
-            status.textContent = message;
-        }
-
-        function showToast(message, type) {
-            const toast = document.createElement('div');
-            toast.className = `toast-brutal ${type}`;
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
+        loadConfig();
     </script>
 </body>
 </html>
