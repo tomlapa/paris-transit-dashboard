@@ -1,249 +1,282 @@
-# 🚇 Paris Transit Dashboard v3 - Smart Search with Interactive Map
+# 🚇 Paris Transit Dashboard - VPS Edition
 
-Real-time transit dashboard for Paris Île-de-France region with unified smart search and interactive map interface.
+Real-time transit dashboard for Paris Île-de-France with **automatic VPS setup**. One command installs everything and makes it accessible online.
 
-## ✨ What's New in v3
+## ✨ Features
 
-### 🔍 **Unified Smart Search**
-- **Intelligent address detection** - automatically detects if you're searching for an address or stop name
-- Search "Rue du Maréchal Leclerc" → finds address → shows nearby stops within 500m
-- Search "Écoles de Gravelle" → directly searches stop names
-- Keywords like `rue`, `avenue`, `boulevard` trigger address search
+- 🔍 **Smart Search** - Find stops by address or name
+- 🗺️ **Interactive Map** - Click anywhere to find nearby stops  
+- 📍 **Geolocation** - Find stops near your current location
+- ⏱️ **Real-Time Data** - Live departure times from IDFM
+- 🐳 **Docker Ready** - Containerized deployment
+- 🌐 **Auto Online** - Automatically configured for public access
+- 🔓 **Auto Firewall** - Opens required ports automatically
+- 📱 **Mobile Friendly** - Responsive design
+- 🔄 **Auto-Refresh** - Updates every 30 seconds
 
-### 🗺️ **Interactive Leaflet Map**
-- **Side-by-side view** - map and results list together (stacks vertically on mobile)
-- **Click on map** → finds stops within 500m radius with visual circle
-- **Color-coded pins** - Blue (Metro), Green (RER), Yellow (Bus), Orange (Tram), Purple (Train)
-- **Click pins** → see all lines at that stop → select line → choose direction → add!
-- **"Locate me" button** - use browser geolocation
-- **"Recenter" button** - back to Paris overview
-- Zoom in to neighborhood level to see stops automatically
-
-### 🎯 **Streamlined Workflow**
-1. Type address or stop name
-2. Map zooms to location + shows nearby stops
-3. Click stop (on map or in list)
-4. See all lines at that stop
-5. Select line → choose direction → done!
-
-### 📱 **Raspberry Pi Ready**
-- Lightweight Leaflet.js (no Google Maps API key needed)
-- Works great on ARM processors
-- Kiosk mode for dedicated display
-- Runs on Ubuntu Server, Debian, Raspberry Pi OS
-
-## 🚀 Quick Install (One Command)
+## 🚀 One-Command Install (VPS)
 
 ```bash
-# Extract and install
-tar -xzf transit-dashboard-v3.tar.gz
-cd transit-dashboard-v3
-sudo bash install.sh
+curl -fsSL https://raw.githubusercontent.com/tomlapa/paris-transit-dashboard/main/remote-install.sh | bash
+```
+
+**That's it!** The script will:
+- ✅ Detect your public IP
+- ✅ Detect your cloud provider (AWS, DigitalOcean, GCP, Azure, etc.)
+- ✅ Install Docker if needed
+- ✅ Configure firewall automatically (UFW, firewalld, iptables)
+- ✅ Start the dashboard
+- ✅ Give you the public URL to access it
+
+### What You'll See
+
+```
+╔════════════════════════════════════════════════════════╗
+║        Paris Transit Dashboard - Auto Setup            ║
+╚════════════════════════════════════════════════════════╝
+
+🔍 Detecting public IP address...
+✓ Public IP detected: 123.45.67.89
+
+🔍 Detecting cloud provider...
+✓ Cloud provider detected: DigitalOcean
+
+🔍 Checking if port 8080 is accessible...
+✓ Port 8080 is available
+
+🔍 Checking firewall configuration...
+✓ Port 8080 opened in UFW
+
+🚀 Starting Paris Transit Dashboard...
+✓ Application is running!
+
+╔════════════════════════════════════════════════════════╗
+║              🎉 Setup Complete! 🎉                     ║
+╚════════════════════════════════════════════════════════╝
+
+📍 YOUR DASHBOARD IS NOW ONLINE!
+
+Access it at:
+  http://123.45.67.89:8080
+
+Setup page:
+  http://123.45.67.89:8080/setup
 ```
 
 ## 📋 Requirements
 
-- **OS**: Ubuntu 20.04+, Debian 11+, Raspberry Pi OS
-- **Python**: 3.8+
-- **API Key**: Free from [prim.iledefrance-mobilites.fr](https://prim.iledefrance-mobilites.fr)
+- **VPS/Cloud Server** (AWS, DigitalOcean, Linode, Vultr, etc.)
+- **Ubuntu/Debian** based system
+- **Root or sudo access**
+- **IDFM API Key** (free from [prim.iledefrance-mobilites.fr](https://prim.iledefrance-mobilites.fr))
 
-## 🔧 Installation Options
+## 🔧 Manual Installation
 
-### System-Wide Install (Recommended)
+If you prefer to do it step by step:
+
 ```bash
-sudo bash install.sh
+# Clone repository
+git clone https://github.com/tomlapa/paris-transit-dashboard.git
+cd paris-transit-dashboard
+
+# Run auto-setup
+bash auto-setup.sh
 ```
-- Installs to `/opt/transit-dashboard`
-- Creates systemd service
-- Available at boot
-- Global `transit-config` command
 
-### User Install (No sudo)
-```bash
-bash install.sh
-```
-- Installs to `~/transit-dashboard`
-- User systemd service
-- Run `~/transit-dashboard/transit-config`
+## 🗺️ Initial Configuration
 
-### Raspberry Pi Kiosk Mode
-The installer will offer kiosk mode setup:
-- Full-screen browser on boot
-- No mouse cursor
-- Perfect for dedicated transit display
+After installation, visit your dashboard's setup page:
 
-## 📍 How to Use
+1. **Go to**: `http://YOUR-IP:8080/setup`
+2. **Enter API Key**: Get yours at https://prim.iledefrance-mobilites.fr
+3. **Add Stops**: Use smart search or map interface
+4. **View Dashboard**: `http://YOUR-IP:8080`
 
-### Step 1: Get API Key
-1. Visit [prim.iledefrance-mobilites.fr](https://prim.iledefrance-mobilites.fr)
-2. Create account
-3. Generate API key (free)
+### Smart Search
+- Type an address: "Rue du Maréchal Leclerc, Joinville-le-Pont"
+- Or search by stop name: "Écoles de Gravelle"
+- Map shows nearby stops with pins
+- Click a stop → see all lines → add to dashboard
 
-### Step 2: Add Stops
-
-**Option A: Smart Search (Recommended)**
-1. Go to "🔍 Recherche intelligente" tab
-2. Type address: `Rue du Maréchal Leclerc, Joinville-le-Pont`
-   - Map zooms to location
-   - Shows stops within 500m
-   - Click stop → see all lines
-3. Or type stop name: `Écoles de Gravelle`
-   - Searches stops by name
-4. Click line → choose direction → add!
-
-**Option B: Map Click**
-1. Click anywhere on the map
-2. See nearby stops with 500m radius circle
-3. Click pin → popup shows lines
-4. Click line → choose direction → add!
-
-**Option C: Direct Search**
-1. Go to "🚏 Recherche directe" tab
-2. Search by stop/line name
-3. Works like the old version
-
-### Step 3: View Dashboard
-Access at `http://localhost:8080` or `http://YOUR-IP:8080`
+### Map Interface
+- Click anywhere on the map
+- See stops within 500m radius
+- Click pins to view available lines
+- Add stops directly from map popups
 
 ## 🛠️ Management
 
-### Service Commands
+All access information is saved in `ACCESS-INFO.txt` in your installation directory.
+
 ```bash
-# Check status
-sudo systemctl status transit-dashboard
+# View logs
+docker compose logs -f
 
 # Restart
-sudo systemctl restart transit-dashboard
-
-# View logs
-sudo journalctl -u transit-dashboard -f
+docker compose restart
 
 # Stop
-sudo systemctl stop transit-dashboard
+docker compose down
+
+# Update to latest version
+git pull
+docker compose up -d --build
+
+# Check status
+docker compose ps
 ```
 
-### Configuration
-```bash
-# CLI tool
-transit-config
+## 📱 Supported Transport
 
-# Or visit
-http://localhost:8080/setup
-http://localhost:8080/admin
-```
-
-## 🌐 Remote Access (Cloudflare Tunnel)
-
-```bash
-# Install cloudflared
-curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64.deb
-sudo dpkg -i cloudflared.deb
-
-# Create tunnel
-cloudflared tunnel --url http://localhost:8080
-```
-
-## 🎨 Features
-
-### Search Intelligence
-- Address keywords: `rue`, `avenue`, `boulevard`, `place`, `quai`, `impasse`, `allée`, `chemin`, `route`
-- Auto-geocoding via French Government API
-- Falls back to stop search if no address found
-- Limited to Île-de-France region
-
-### Map Features
-- **OpenStreetMap** - free, no API key
-- **500m radius circles** - visual search area
-- **Zoom-based loading** - shows stops only at neighborhood level
-- **Geolocation** - find stops near you
-- **Custom pin colors** - by transport type
-- **Popup interface** - quick line selection
-
-### Real-Time Data
-- Live departure times
-- Delay information
-- Service status
-- Auto-refresh every 30 seconds
-
-### Supported Transport
 - 🚌 Bus
 - 🚇 Métro
 - 🚆 RER
 - 🚊 Tramway
-- 🚄 Train
+- 🚄 Train (Transilien)
 
-## 🔍 Example Searches
+## 🔐 Security Notes
 
-### Addresses
-- ✅ `Rue du Maréchal Leclerc, Joinville-le-Pont`
-- ✅ `12 Avenue de Paris, Saint-Maurice`
-- ✅ `Place de la République`
+Your dashboard is **publicly accessible** by default (no authentication).
 
-### Stops
-- ✅ `Écoles de Gravelle`
-- ✅ `Châtelet Les Halles`
-- ✅ `Gare de Lyon`
+### For Production Use:
 
-### Lines
-- ✅ `RER A`
-- ✅ `Métro 1`
-- ✅ `Bus 111`
+**Option 1: Add Basic Auth with Nginx**
+```bash
+sudo apt install nginx apache2-utils
+sudo htpasswd -c /etc/nginx/.htpasswd username
+```
+
+**Option 2: Cloudflare Tunnel (HTTPS + Optional Auth)**
+```bash
+# Add to docker-compose.yml
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=your_token_here
+```
+
+**Option 3: Restrict by IP (Cloud Firewall)**
+- AWS: Security Groups
+- DigitalOcean: Cloud Firewall
+- GCP: Firewall Rules
+- Azure: Network Security Groups
 
 ## 🐛 Troubleshooting
 
-### Map not loading
-- Check browser console for errors
-- Ensure Leaflet CDN is accessible
-- Try clearing browser cache
+### Can't access dashboard from internet
 
-### No stops showing on map
-- Zoom in to neighborhood level (zoom 15+)
-- Check that API key is valid
-- Verify you're in Île-de-France region
+**Check cloud provider firewall:**
 
-### Service won't start
+- **AWS**: EC2 → Security Groups → Allow port 8080
+- **DigitalOcean**: Networking → Firewalls → Add port 8080
+- **GCP**: VPC → Firewall Rules → Allow tcp:8080
+- **Azure**: Network Security Group → Add inbound rule for 8080
+
+**Check container is running:**
 ```bash
-# Check logs
-sudo journalctl -u transit-dashboard -n 50
-
-# Check port availability
-sudo netstat -tulpn | grep 8080
-
-# Restart service
-sudo systemctl restart transit-dashboard
+docker compose ps
+docker compose logs
 ```
 
-## 💡 Tips
+**Check port is open locally:**
+```bash
+curl http://localhost:8080
+```
 
-1. **First time setup**: Search for your address to see all nearby stops at once
-2. **Add multiple stops**: Search "Écoles de Gravelle" → add Bus 111 + 281, then search "Joinville RER" → add RER A
-3. **Mobile friendly**: Map stacks vertically on phones
-4. **Raspberry Pi**: Use HDMI output for dedicated display
-5. **Kiosk mode**: Hides browser chrome, perfect for wall-mounted displays
+### Port 8080 already in use
+
+```bash
+# Find what's using it
+sudo netstat -tulpn | grep 8080
+
+# Change port in docker-compose.yml
+ports:
+  - "3000:8080"  # Use 3000 instead
+```
+
+### Firewall issues
+
+```bash
+# UFW
+sudo ufw status
+sudo ufw allow 8080/tcp
+
+# firewalld
+sudo firewall-cmd --list-ports
+sudo firewall-cmd --permanent --add-port=8080/tcp
+sudo firewall-cmd --reload
+
+# iptables
+sudo iptables -L -n | grep 8080
+sudo iptables -I INPUT -p tcp --dport 8080 -j ACCEPT
+```
 
 ## 📊 Performance
 
-- **Raspberry Pi 3+**: Smooth operation
-- **Raspberry Pi 4**: Excellent performance
-- **Ubuntu Server**: Very fast
-- **Memory**: ~100MB RAM usage
-- **Startup**: ~2 seconds
+- **Memory**: ~256MB RAM
+- **CPU**: 0.5 cores
+- **Disk**: ~100MB
+- **Startup**: ~3 seconds
+
+Tested on:
+- ✅ AWS EC2 (t2.micro and up)
+- ✅ DigitalOcean Droplets ($4/mo and up)
+- ✅ Linode Nanodes
+- ✅ Vultr Cloud Compute
+- ✅ Google Cloud Compute Engine
+- ✅ Azure Virtual Machines
+
+## 🌐 Cloud Provider Notes
+
+### AWS
+- Use Amazon Linux 2 or Ubuntu
+- Remember to configure Security Group for port 8080
+
+### DigitalOcean
+- Use Ubuntu 22.04 droplet
+- $4/month droplet is sufficient
+- Configure Cloud Firewall if enabled
+
+### Google Cloud
+- Use Ubuntu image
+- Add firewall rule for tcp:8080
+- May need to enable external IP
+
+### Azure
+- Use Ubuntu VM
+- Configure Network Security Group
+- Add inbound rule for port 8080
+
+## 🤝 Contributing
+
+Contributions welcome! Feel free to:
+- Report bugs
+- Suggest features
+- Submit pull requests
+
+## 📜 License
+
+MIT License - see LICENSE file for details
 
 ## 🙏 Credits
 
-- **IDFM/PRIM API** - Real-time transit data
+- **IDFM/PRIM** - Real-time transit data
 - **French Government Address API** - Geocoding
 - **Leaflet.js** - Map interface
 - **OpenStreetMap** - Map tiles
 - **FastAPI** - Backend framework
 
-## 📜 License
+## 📞 Support
 
-Open Database License (OdBL) - Data from IDFM
-Code: MIT License
+- 📖 [Docker Documentation](./DOCKER.md)
+- 🚀 [Quick Start Guide](./QUICKSTART-DOCKER.md)
+- 🐛 [Report Issues](https://github.com/tomlapa/paris-transit-dashboard/issues)
 
 ---
 
 **Made with ❤️ for Paris transit enthusiasts**
 
-Need help? Check `/setup` or `/admin` in your browser for guided configuration.
+One command. Automatically online. No configuration needed.
