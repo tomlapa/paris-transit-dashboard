@@ -608,18 +608,33 @@ class IDFMClient:
                 url = f"{PRIM_BASE_URL}/stop-monitoring"
                 params = {"MonitoringRef": "STIF:StopPoint:Q:473921:"}
                 
+                print(f"[DEBUG] Testing API key: {self.api_key[:10]}...")
+                print(f"[DEBUG] URL: {url}")
+                
                 response = await client.get(url, headers=self.prim_headers, params=params)
+                
+                print(f"[DEBUG] Response status: {response.status_code}")
                 
                 if response.status_code == 200:
                     data = response.json()
+                    
+                    # Check for rate limit in response body
+                    if isinstance(data, dict) and "rate limit" in str(data.get("message", "")).lower():
+                        return {"success": False, "message": "API rate limit exceeded"}
+                    
+                    print(f"[DEBUG] Response has 'Siri': {'Siri' in data}")
                     if "Siri" in data:
                         return {"success": True, "message": "API connectée ✓"}
                     return {"success": False, "message": "Réponse invalide"}
                 elif response.status_code in [401, 403]:
                     return {"success": False, "message": "Clé API invalide"}
+                elif response.status_code == 429:
+                    return {"success": False, "message": "API rate limit exceeded"}
                 else:
                     return {"success": False, "message": f"Erreur {response.status_code}"}
         except httpx.TimeoutException:
+            print(f"[DEBUG] Timeout exception")
             return {"success": False, "message": "Timeout"}
         except Exception as e:
+            print(f"[DEBUG] Exception: {type(e).__name__}: {str(e)}")
             return {"success": False, "message": str(e)}

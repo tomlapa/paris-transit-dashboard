@@ -5,10 +5,11 @@ from fastapi.templating import Jinja2Templates
 import asyncio
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 from pathlib import Path
 import pytz
+from collections import deque
 
 from api.client import IDFMClient, PARIS_TZ
 from api.config import ConfigManager
@@ -34,6 +35,24 @@ idfm_client: Optional[IDFMClient] = None
 current_data: Dict[str, StopDepartures] = {}
 background_task = None
 
+# Rate limit tracking
+api_call_times = deque(maxlen=100)  # Track last 100 API calls
+
+def track_api_call():
+    """Track API call for rate limit monitoring"""
+    api_call_times.append(datetime.now())
+
+def get_api_stats():
+    """Get API usage statistics"""
+    now = datetime.now()
+    last_minute = sum(1 for t in api_call_times if now - t < timedelta(minutes=1))
+    last_hour = len(api_call_times)
+    return {
+        "calls_last_minute": last_minute,
+        "calls_last_hour": last_hour,
+        "avg_per_minute": last_hour / 60 if last_hour > 0 else 0
+    }
+
 
 def get_client() -> Optional[IDFMClient]:
     """Get or create IDFM client"""
@@ -55,10 +74,12 @@ async def fetch_all_stops():
     while True:
         client = get_client()
         if client and config_manager.stops:
-            print(f"[{paris_now().strftime('%H:%M:%S')}] Fetching transit data...")
+            stats = get_api_stats()
+            print(f"[{paris_now().strftime('%H:%M:%S')}] Fetching transit data... (API: {stats['calls_last_minute']}/min, {stats['calls_last_hour']}/hr)")
             
             for stop_config in config_manager.stops:
                 try:
+                    track_api_call()  # Track this API call
                     departures = await client.get_departures(stop_config)
                     key = f"{stop_config.id}:{stop_config.direction or ''}"
                     current_data[key] = departures
@@ -227,12 +248,18 @@ async def validate_api_key(request: Request):
         if not api_key:
             return {"success": False, "message": "Clé API vide"}
         
-        # Save key
+        # Save key immediately
         config_manager.api_key = api_key
+        config_manager.save_config()
         
         # Create client and test
         idfm_client = IDFMClient(api_key)
         result = await idfm_client.test_connection()
+        
+        # If rate limited, just accept the key anyway
+        if "rate limit" in result.get("message", "").lower():
+            print("[INFO] Rate limited during validation, accepting key anyway")
+            result = {"success": True, "message": "Clé API acceptée (rate limit atteint, sera testée plus tard)"}
         
         if result["success"]:
             # Start background task if not running
@@ -373,12 +400,14 @@ async def reorder_stops(order: List[int]):
 @app.get("/api/config")
 async def get_config():
     """Get current configuration"""
+    stats = get_api_stats()
     return {
         "api_key_set": bool(config_manager.api_key),
         "refresh_interval": config_manager.refresh_interval,
         "max_departures": config_manager.max_departures,
         "stops": [s.model_dump() for s in config_manager.stops],
-        "is_configured": config_manager.is_configured()
+        "is_configured": config_manager.is_configured(),
+        "api_stats": stats
     }
 
 
