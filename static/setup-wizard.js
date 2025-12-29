@@ -29,6 +29,20 @@ function setupStepValidation() {
     });
 }
 
+// Toggle API Key Visibility
+function toggleApiKeyVisibility() {
+    const input = document.getElementById('api-key');
+    const btn = document.getElementById('toggle-visibility-btn');
+    
+    if (input.type === 'text') {
+        input.type = 'password';
+        btn.textContent = '🔓 Afficher';
+    } else {
+        input.type = 'text';
+        btn.textContent = '🔒 Masquer';
+    }
+}
+
 // Tab Switching
 function switchTab(tabName) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));

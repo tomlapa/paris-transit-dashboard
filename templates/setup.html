@@ -434,7 +434,15 @@
     <div class="api-key-section">
         <h3>Clé API IDFM</h3>
         <div class="form-group">
-            <input type="password" id="api-key" placeholder="Votre clé API" value="">
+            <div style="position: relative;">
+                <input type="text" id="api-key" placeholder="Votre clé API" value="" style="padding-right: 120px;">
+                <button class="btn btn-secondary" onclick="toggleApiKeyVisibility()" 
+                        style="position: absolute; right: 5px; top: 5px; padding: 8px 12px; font-size: 0.85rem;"
+                        id="toggle-visibility-btn"
+                        title="Cliquez pour masquer/afficher">
+                    🔒 Masquer
+                </button>
+            </div>
             <button class="btn btn-primary" onclick="validateApiKey()" style="margin-top: 10px;">Valider la clé</button>
             <div id="api-status" style="margin-top: 10px;"></div>
         </div>

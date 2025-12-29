@@ -215,6 +215,36 @@ async def set_api_key(api_key: str = Form(...)):
     return result
 
 
+@app.post("/api/config/validate")
+async def validate_api_key(request: Request):
+    """Validate and save API key"""
+    global idfm_client, background_task
+    
+    try:
+        data = await request.json()
+        api_key = data.get('api_key', '').strip()
+        
+        if not api_key:
+            return {"success": False, "message": "Clé API vide"}
+        
+        # Save key
+        config_manager.api_key = api_key
+        
+        # Create client and test
+        idfm_client = IDFMClient(api_key)
+        result = await idfm_client.test_connection()
+        
+        if result["success"]:
+            # Start background task if not running
+            if background_task is None or background_task.done():
+                background_task = asyncio.create_task(fetch_all_stops())
+        
+        return result
+        
+    except Exception as e:
+        return {"success": False, "message": f"Erreur: {str(e)}"}
+
+
 @app.get("/api/config/test")
 async def test_api():
     """Test API connection"""
