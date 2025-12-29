@@ -234,22 +234,44 @@ async def validate_api_key(request: Request):
             print(f"[VALIDATE] Key too short: {len(api_key)} chars")
             return {"success": False, "message": "Clé API trop courte (doit faire au moins 20 caractères)"}
         
-        # Save key immediately
+        # Create client and test connection
+        idfm_client = IDFMClient(api_key)
+        result = await idfm_client.test_connection()
+        
+        print(f"[VALIDATE] Test result: {result}")
+        
+        # If rate limited, save anyway and warn user
+        if not result["success"] and "rate limit" in result.get("message", "").lower():
+            print("[VALIDATE] Rate limited - saving key anyway")
+            config_manager.api_key = api_key
+            config_manager.save()
+            
+            # Start background task if stops are configured
+            if config_manager.stops:
+                if background_task is None or background_task.done():
+                    background_task = asyncio.create_task(fetch_all_stops())
+            
+            return {
+                "success": True, 
+                "message": "⚠️ Rate limit atteint - clé enregistrée (sera testée lors de la récupération des données)"
+            }
+        
+        # If validation failed for other reasons, don't save
+        if not result["success"]:
+            print(f"[VALIDATE] Validation failed: {result['message']}")
+            return result
+        
+        # Success - save the key
         config_manager.api_key = api_key
-        config_manager.save_config()
+        config_manager.save()
         print(f"[VALIDATE] Key saved successfully")
         
-        # Create client (will be tested when fetching real data)
-        idfm_client = IDFMClient(api_key)
-        
-        # Start background task if not running and stops are configured
+        # Start background task if stops are configured
         if config_manager.stops:
             if background_task is None or background_task.done():
                 background_task = asyncio.create_task(fetch_all_stops())
         
-        result = {"success": True, "message": "Clé API enregistrée ✓ (sera testée lors de la récupération des données)"}
-        print(f"[VALIDATE] Returning: {result}")
-        return result
+        return {"success": True, "message": "✓ Clé API validée et enregistrée"}
         
     except Exception as e:
         print(f"[VALIDATE] Exception: {e}")
