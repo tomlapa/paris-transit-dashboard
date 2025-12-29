@@ -4,344 +4,791 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configuration - Transit Dashboard</title>
-    <link rel="stylesheet" href="/static/style.css">
     
     <style>
-        body {
-            background: #1a1a2e;
-            color: #eee;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            padding: 20px;
-            margin: 0 auto;
-            max-width: 900px;
-        }
-        
-        .setup-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .setup-header h1 {
-            color: #f68b1e;
-            font-size: 2rem;
+        * {
             margin: 0;
-        }
-        
-        .step-container {
-            background: #252542;
-            border-radius: 12px;
-            padding: 30px;
-            margin-bottom: 20px;
-        }
-        
-        .step-title {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-            color: #f68b1e;
-        }
-        
-        /* Search Box */
-        .search-box {
-            position: relative;
-            margin-bottom: 20px;
-        }
-        
-        .search-box input {
-            width: 100%;
-            padding: 15px;
-            padding-right: 120px;
-            border: 2px solid #3a3a5c;
-            border-radius: 8px;
-            background: #1a1a2e;
-            color: #fff;
-            font-size: 1rem;
+            padding: 0;
             box-sizing: border-box;
         }
         
-        .search-box input:focus {
-            border-color: #f68b1e;
-            outline: none;
+        body {
+            background: linear-gradient(135deg, #1a1f3a 0%, #2d1b3d 100%);
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
         }
         
-        .search-box button {
+        .metro-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        /* Metro Sign Header */
+        .metro-sign {
+            background: linear-gradient(145deg, #f68b1e, #ff6b35);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 
+                0 10px 40px rgba(246, 139, 30, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            margin-bottom: 30px;
+            border: 3px solid #fff;
+            position: relative;
+        }
+        
+        .metro-sign::before {
+            content: '';
             position: absolute;
-            right: 5px;
-            top: 5px;
-            padding: 10px 20px;
-            background: #f68b1e;
-            border: none;
-            border-radius: 6px;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 30px;
+            background: #2d1b3d;
+            border-radius: 15px 15px 0 0;
+        }
+        
+        .metro-sign h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            letter-spacing: 2px;
+        }
+        
+        .metro-sign .subtitle {
+            font-size: 1.1rem;
+            margin-top: 10px;
+            opacity: 0.9;
+        }
+        
+        /* Station Panel */
+        .station-panel {
+            background: #fff;
             color: #000;
-            font-weight: 600;
-            cursor: pointer;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+            border: 5px solid #f68b1e;
         }
         
-        .search-box button:hover {
-            background: #ff9d3d;
+        .panel-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1a1f3a;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #f68b1e;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
-        /* Selection Lists */
-        .selection-list {
-            max-height: 500px;
-            overflow-y: auto;
+        .panel-title::before {
+            content: '●';
+            color: #f68b1e;
+            font-size: 2rem;
+        }
+        
+        /* API Key Input */
+        .api-input-group {
+            position: relative;
             margin: 20px 0;
         }
         
-        .selection-item {
+        .api-input-group input {
+            width: 100%;
             padding: 15px;
-            background: #1a1a2e;
-            border: 2px solid #3a3a5c;
+            padding-right: 140px;
+            font-size: 1rem;
+            border: 3px solid #ddd;
+            border-radius: 10px;
+            background: #f9f9f9;
+            transition: all 0.3s;
+        }
+        
+        .api-input-group input:focus {
+            outline: none;
+            border-color: #f68b1e;
+            background: #fff;
+        }
+        
+        .toggle-btn {
+            position: absolute;
+            right: 80px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 5px 10px;
+        }
+        
+        .validate-btn {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 10px 20px;
+            background: #4caf50;
+            color: white;
+            border: none;
             border-radius: 8px;
-            margin-bottom: 10px;
+            font-weight: bold;
             cursor: pointer;
             transition: all 0.2s;
+        }
+        
+        .validate-btn:hover {
+            background: #45a049;
+            transform: translateY(-50%) scale(1.05);
+        }
+        
+        .api-status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .api-status.valid {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+        
+        .api-status.invalid {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+        
+        .api-link {
+            color: #f68b1e;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .api-link:hover {
+            text-decoration: underline;
+        }
+        
+        /* Search Box */
+        .search-station {
+            position: relative;
+            margin: 25px 0;
+        }
+        
+        .search-station input {
+            width: 100%;
+            padding: 18px 20px;
+            padding-right: 140px;
+            font-size: 1.1rem;
+            border: 3px solid #f68b1e;
+            border-radius: 12px;
+            background: #fff;
+            color: #000;
+            font-weight: 500;
+        }
+        
+        .search-station input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(246, 139, 30, 0.3);
+        }
+        
+        .search-btn {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 12px 30px;
+            background: linear-gradient(145deg, #f68b1e, #ff6b35);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(246, 139, 30, 0.3);
+        }
+        
+        .search-btn:hover {
+            transform: translateY(-50%) scale(1.05);
+            box-shadow: 0 6px 15px rgba(246, 139, 30, 0.5);
+        }
+        
+        .search-btn:active {
+            transform: translateY(-48%) scale(0.98);
+        }
+        
+        /* Info Box */
+        .info-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .info-box strong {
+            display: block;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+        
+        /* Results */
+        .results-board {
+            margin: 25px 0;
+        }
+        
+        .line-card {
+            background: white;
+            border-left: 6px solid #f68b1e;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
         }
         
-        .selection-item:hover {
-            border-color: #f68b1e;
-            transform: translateX(5px);
+        .line-card:hover {
+            transform: translateX(10px);
+            box-shadow: 0 5px 20px rgba(246, 139, 30, 0.3);
+            border-left-width: 10px;
         }
         
-        .selection-item.selected {
-            border-color: #f68b1e;
-            background: #2a2a4a;
-        }
-        
-        .item-icon {
-            width: 40px;
-            height: 40px;
+        .line-icon {
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
+            font-size: 2rem;
             flex-shrink: 0;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
         }
         
-        .item-details {
+        .line-info {
             flex: 1;
         }
         
-        .item-name {
-            font-weight: 600;
-            font-size: 1.1rem;
-            margin-bottom: 4px;
+        .line-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #1a1f3a;
+            margin-bottom: 5px;
         }
         
-        .item-meta {
-            color: #888;
-            font-size: 0.9rem;
+        .line-meta {
+            color: #666;
+            font-size: 0.95rem;
         }
         
-        /* Direction Groups */
-        .direction-group {
+        /* Direction Selection */
+        .direction-board {
+            background: #fff;
+            border: 4px solid #f68b1e;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        
+        .direction-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #1a1f3a;
             margin-bottom: 20px;
-            padding: 15px;
-            background: #1a1a2e;
-            border-radius: 8px;
-        }
-        
-        .direction-group-title {
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: #f68b1e;
+            text-align: center;
         }
         
         .direction-option {
-            padding: 10px;
-            margin: 5px 0;
-            border: 2px solid #3a3a5c;
-            border-radius: 6px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 18px 25px;
+            margin: 12px 0;
+            border-radius: 12px;
             cursor: pointer;
+            transition: all 0.3s;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
         }
         
         .direction-option:hover {
-            border-color: #f68b1e;
+            transform: scale(1.03);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
         }
         
         .direction-option.selected {
-            border-color: #f68b1e;
-            background: #2a2a4a;
+            background: linear-gradient(145deg, #4caf50, #45a049);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.5);
+        }
+        
+        .direction-option input[type="radio"] {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
         }
         
         /* Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
         .btn {
-            padding: 12px 25px;
+            flex: 1;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
             border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
         
         .btn-primary {
-            background: #f68b1e;
-            color: #000;
+            background: linear-gradient(145deg, #4caf50, #45a049);
+            color: white;
         }
         
-        .btn-primary:hover:not(:disabled) {
-            background: #ff9d3d;
-        }
-        
-        .btn-primary:disabled {
-            background: #3a3a5c;
-            color: #666;
-            cursor: not-allowed;
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(76, 175, 80, 0.4);
         }
         
         .btn-secondary {
-            background: #3a3a5c;
-            color: #fff;
+            background: linear-gradient(145deg, #757575, #616161);
+            color: white;
         }
         
         .btn-secondary:hover {
-            background: #4a4a6c;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(117, 117, 117, 0.4);
         }
         
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        
-        /* Messages */
-        .info-message {
-            padding: 15px;
-            background: #2a2a4a;
-            border-left: 4px solid #f68b1e;
-            border-radius: 6px;
-            margin: 15px 0;
-        }
-        
-        .error-message {
-            padding: 15px;
-            background: #4a2a2a;
-            border-left: 4px solid #f44336;
-            border-radius: 6px;
-            margin: 15px 0;
-            color: #ffcccc;
-        }
-        
-        .success-message {
-            padding: 15px;
-            background: #2a4a2a;
-            border-left: 4px solid #4caf50;
-            border-radius: 6px;
-            margin: 15px 0;
-            color: #ccffcc;
-        }
-        
-        /* Loading Spinner */
-        .loading {
+        /* Loading */
+        .loading-train {
             text-align: center;
             padding: 40px;
-            color: #888;
+            color: #f68b1e;
         }
         
-        .spinner {
-            border: 3px solid #3a3a5c;
-            border-top: 3px solid #f68b1e;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
+        .train-animation {
+            font-size: 3rem;
+            animation: train-move 1.5s ease-in-out infinite;
         }
         
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        @keyframes train-move {
+            0%, 100% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
         }
         
-        /* API Key Section */
-        .api-key-section {
-            background: #252542;
+        /* Toast Messages */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 20px 30px;
             border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 30px;
+            font-weight: bold;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            z-index: 10000;
+            animation: slideIn 0.3s ease-out;
         }
         
-        .api-status {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 15px;
-            font-size: 0.85rem;
-            font-weight: 600;
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
         
-        .api-status.valid {
-            background: #4caf50;
-            color: #fff;
+        .toast.success {
+            background: linear-gradient(145deg, #4caf50, #45a049);
+            color: white;
         }
         
-        .api-status.invalid {
-            background: #f44336;
-            color: #fff;
+        .toast.error {
+            background: linear-gradient(145deg, #f44336, #d32f2f);
+            color: white;
+        }
+        
+        /* Responsive */
+        @media (max-width: 600px) {
+            .metro-sign h1 {
+                font-size: 1.8rem;
+            }
+            
+            .line-card {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="setup-header">
-        <h1>🚇 Configuration du Dashboard</h1>
-        <p>Configurez vos arrêts et lignes de transport</p>
-    </div>
+    <div class="metro-container">
+        <!-- Metro Sign Header -->
+        <div class="metro-sign">
+            <h1>🚇 TRANSIT DASHBOARD</h1>
+            <div class="subtitle">Configuration des Arrêts</div>
+        </div>
 
-    <!-- API Key Section -->
-    <div class="api-key-section">
-        <h3>Clé API IDFM</h3>
-        <div class="form-group">
-            <div style="position: relative;">
-                <input type="text" id="api-key" placeholder="Votre clé API" value="" style="padding-right: 120px; width: 100%; padding: 12px; border: 2px solid #3a3a5c; border-radius: 8px; background: #1a1a2e; color: #fff; font-size: 1rem; box-sizing: border-box;">
-                <button class="btn btn-secondary" onclick="toggleApiKeyVisibility()" 
-                        style="position: absolute; right: 5px; top: 5px; padding: 8px 12px; font-size: 0.85rem;"
-                        id="toggle-visibility-btn"
-                        title="Cliquez pour masquer/afficher">
-                    🔒 Masquer
-                </button>
+        <!-- API Key Panel -->
+        <div class="station-panel">
+            <div class="panel-title">Clé API IDFM</div>
+            <div class="api-input-group">
+                <input type="text" id="api-key" placeholder="Entrez votre clé API...">
+                <button class="toggle-btn" id="toggle-btn" onclick="toggleKey()">👁️</button>
+                <button class="validate-btn" onclick="validateKey()">Valider</button>
             </div>
-            <button class="btn btn-primary" onclick="validateApiKey()" style="margin-top: 10px;">Valider la clé</button>
-            <div id="api-status" style="margin-top: 10px;"></div>
+            <div id="api-status"></div>
+            <p style="margin-top: 15px; color: #666;">
+                Obtenez votre clé gratuite sur 
+                <a href="https://prim.iledefrance-mobilites.fr" target="_blank" class="api-link">
+                    prim.iledefrance-mobilites.fr
+                </a>
+            </p>
         </div>
-        <p style="color: #888; font-size: 0.9rem;">
-            Obtenez votre clé gratuite sur 
-            <a href="https://prim.iledefrance-mobilites.fr" target="_blank" style="color: #f68b1e;">
-                prim.iledefrance-mobilites.fr
-            </a>
-        </p>
+
+        <!-- Search Panel -->
+        <div class="station-panel">
+            <div class="panel-title">Recherche d'Arrêt ou Ligne</div>
+            <div class="info-box">
+                <strong>Exemples de recherche:</strong>
+                "Écoles de Gravelle", "RER A", "Bus 111", "Gare de Lyon", "Joinville"
+            </div>
+            <div class="search-station">
+                <input 
+                    type="text" 
+                    id="search-input" 
+                    placeholder="Tapez le nom d'un arrêt ou d'une ligne..."
+                    onkeypress="if(event.key==='Enter') doSearch()">
+                <button class="search-btn" onclick="doSearch()">🔍 Chercher</button>
+            </div>
+            <div id="results"></div>
+        </div>
+
+        <!-- Direction Selection (Hidden initially) -->
+        <div id="direction-panel" style="display: none;">
+            <div class="station-panel">
+                <div class="panel-title">Sélection de la Direction</div>
+                <div id="stop-info"></div>
+                <div class="direction-board">
+                    <div class="direction-title">Choisissez votre direction</div>
+                    <div id="directions"></div>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="backToSearch()">← Nouvelle Recherche</button>
+                    <button class="btn btn-primary" onclick="saveConfig()">✓ Ajouter au Dashboard</button>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Main Search Section -->
-    <div class="step-container">
-        <h2 class="step-title">🔍 Rechercher un arrêt ou une ligne</h2>
-        <div class="info-message">
-            Recherchez par nom d'arrêt, nom de ligne, ou numéro<br>
-            <strong>Exemples:</strong> "Écoles de Gravelle", "RER A", "Bus 111", "Joinville"
-        </div>
-        <div class="search-box">
-            <input type="text" id="search-input" placeholder="Ex: Écoles de Gravelle, RER A, Bus 111...">
-            <button onclick="searchStops()">Chercher</button>
-        </div>
-        <div id="search-results"></div>
-    </div>
+    <script>
+        // State
+        let state = {
+            selectedStop: null,
+            selectedLine: null,
+            selectedDirection: null,
+            results: []
+        };
 
-    <!-- Direction Selection (Hidden initially) -->
-    <div class="step-container" id="direction-selection-container" style="display: none;">
-        <h2 class="step-title">Sélectionner la direction</h2>
-        <div id="selected-stop-info"></div>
-        <div id="directions-container"></div>
-        <div class="button-group">
-            <button class="btn btn-secondary" onclick="backToSearch()">← Nouvelle recherche</button>
-            <button class="btn btn-primary" onclick="addToConfig()">Ajouter au Dashboard</button>
-        </div>
-    </div>
+        // Load API key on start
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const res = await fetch('/api/config');
+                const data = await res.json();
+                if (data.api_key) {
+                    document.getElementById('api-key').value = data.api_key;
+                    showStatus('valid', '✓ Clé API valide');
+                }
+            } catch (e) {
+                console.error('Load error:', e);
+            }
+        });
 
-    <script src="/static/setup-wizard.js"></script>
+        // Toggle API key visibility
+        function toggleKey() {
+            const input = document.getElementById('api-key');
+            const btn = document.getElementById('toggle-btn');
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.textContent = '🔒';
+            } else {
+                input.type = 'password';
+                btn.textContent = '👁️';
+            }
+        }
+
+        // Validate API key
+        async function validateKey() {
+            const key = document.getElementById('api-key').value.trim();
+            if (!key) {
+                showToast('Veuillez entrer une clé API', 'error');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/config/validate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({api_key: key})
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    showStatus('valid', '✓ Clé API valide et sauvegardée');
+                    showToast('Clé API validée avec succès!', 'success');
+                } else {
+                    showStatus('invalid', '✗ Clé API invalide');
+                    showToast('Clé API invalide', 'error');
+                }
+            } catch (e) {
+                console.error('Validation error:', e);
+                showToast('Erreur de validation', 'error');
+            }
+        }
+
+        // Search
+        async function doSearch() {
+            const query = document.getElementById('search-input').value.trim();
+            if (!query) {
+                showToast('Veuillez entrer un terme de recherche', 'error');
+                return;
+            }
+
+            const container = document.getElementById('results');
+            container.innerHTML = '<div class="loading-train"><div class="train-animation">🚇</div>Recherche en cours...</div>';
+
+            try {
+                const res = await fetch(`/api/search/stops?q=${encodeURIComponent(query)}`);
+                const data = await res.json();
+
+                if (data.error) {
+                    container.innerHTML = `<div class="info-box" style="background: linear-gradient(145deg, #f44336, #d32f2f);">${escapeHtml(data.error)}</div>`;
+                    return;
+                }
+
+                const results = data.results || [];
+                state.results = results;
+
+                if (results.length === 0) {
+                    container.innerHTML = '<div class="info-box" style="background: linear-gradient(145deg, #ff9800, #f57c00);">Aucun résultat trouvé. Essayez un autre terme.</div>';
+                    return;
+                }
+
+                container.innerHTML = `
+                    <div class="info-box">✓ ${results.length} résultat(s) trouvé(s)</div>
+                    <div class="results-board">
+                        ${results.map((r, i) => `
+                            <div class="line-card" onclick="selectResult(${i})">
+                                <div class="line-icon" style="background: ${getColor(r.transport_type)};">
+                                    ${getIcon(r.transport_type)}
+                                </div>
+                                <div class="line-info">
+                                    <div class="line-name">${escapeHtml(r.stop_name)}</div>
+                                    <div class="line-meta">${escapeHtml(r.line_name)} • ${escapeHtml(r.town || '')}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } catch (e) {
+                console.error('Search error:', e);
+                container.innerHTML = '<div class="info-box" style="background: linear-gradient(145deg, #f44336, #d32f2f);">Erreur de recherche. Vérifiez votre connexion.</div>';
+            }
+        }
+
+        // Select result
+        async function selectResult(index) {
+            const result = state.results[index];
+            if (!result) return;
+
+            state.selectedStop = {
+                stop_id: result.stop_id,
+                stop_id_raw: result.stop_id_raw,
+                stop_name: result.stop_name,
+                town: result.town || ''
+            };
+
+            state.selectedLine = {
+                route_id: result.line_id_raw,
+                line_name: result.line_name,
+                mode: result.transport_type || 'Bus'
+            };
+
+            document.getElementById('stop-info').innerHTML = `
+                <div class="info-box">
+                    <strong>Arrêt:</strong> ${escapeHtml(result.stop_name)}<br>
+                    <strong>Ligne:</strong> ${escapeHtml(result.line_name)}
+                </div>
+            `;
+
+            document.getElementById('direction-panel').style.display = 'block';
+            document.getElementById('direction-panel').scrollIntoView({behavior: 'smooth'});
+
+            const container = document.getElementById('directions');
+            container.innerHTML = '<div class="loading-train"><div class="train-animation">🚇</div>Chargement des directions...</div>';
+
+            try {
+                const res = await fetch(`/api/stop/directions?stop_id=${encodeURIComponent(result.stop_id_raw)}&line_id=${encodeURIComponent(result.line_id_raw)}`);
+                const data = await res.json();
+                const directions = data.directions || [];
+
+                if (directions.length > 0) {
+                    container.innerHTML = directions.map((d, i) => `
+                        <div class="direction-option" onclick="selectDirection('${escapeHtml(d.direction)}', this)">
+                            <input type="radio" name="direction" value="${i}">
+                            <span>→ ${escapeHtml(d.direction)}</span>
+                        </div>
+                    `).join('');
+                } else {
+                    state.selectedDirection = state.selectedLine.line_name;
+                    container.innerHTML = `<div class="info-box">Aucune direction disponible. La ligne sera ajoutée avec la direction par défaut.</div>`;
+                }
+            } catch (e) {
+                console.error('Direction error:', e);
+                container.innerHTML = '<div class="info-box" style="background: linear-gradient(145deg, #f44336, #d32f2f);">Erreur de chargement des directions</div>';
+            }
+        }
+
+        // Select direction
+        function selectDirection(direction, element) {
+            document.querySelectorAll('.direction-option').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            element.querySelector('input').checked = true;
+            state.selectedDirection = direction;
+        }
+
+        // Save config
+        async function saveConfig() {
+            if (!state.selectedDirection) {
+                showToast('Veuillez sélectionner une direction', 'error');
+                return;
+            }
+
+            try {
+                const getRes = await fetch('/api/config');
+                const config = await getRes.json();
+
+                const newStop = {
+                    stop_id: state.selectedStop.stop_id,
+                    stop_name: state.selectedStop.stop_name,
+                    line: state.selectedLine.line_name,
+                    direction: state.selectedDirection,
+                    route_id: state.selectedLine.route_id
+                };
+
+                const allStops = [...(config.stops || []), newStop];
+
+                const saveRes = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        api_key: config.api_key,
+                        stops: allStops
+                    })
+                });
+
+                if (saveRes.ok) {
+                    showToast('Ligne ajoutée avec succès!', 'success');
+                    setTimeout(() => {
+                        if (confirm('Ligne ajoutée! Voulez-vous en ajouter une autre?')) {
+                            backToSearch();
+                        } else {
+                            window.location.href = '/';
+                        }
+                    }, 1000);
+                } else {
+                    showToast('Erreur lors de l\'enregistrement', 'error');
+                }
+            } catch (e) {
+                console.error('Save error:', e);
+                showToast('Erreur lors de l\'enregistrement', 'error');
+            }
+        }
+
+        // Back to search
+        function backToSearch() {
+            state.selectedStop = null;
+            state.selectedLine = null;
+            state.selectedDirection = null;
+            document.getElementById('direction-panel').style.display = 'none';
+            document.getElementById('search-input').value = '';
+            document.getElementById('results').innerHTML = '';
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        // Helpers
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text || '';
+            return div.innerHTML;
+        }
+
+        function getIcon(mode) {
+            const icons = {
+                'Bus': '🚌', 'Métro': '🚇', 'Metro': '🚇',
+                'RER': '🚆', 'Tramway': '🚊', 'Tram': '🚊', 'Train': '🚄'
+            };
+            return icons[mode] || '🚏';
+        }
+
+        function getColor(mode) {
+            const colors = {
+                'Bus': 'linear-gradient(145deg, #4caf50, #45a049)',
+                'Métro': 'linear-gradient(145deg, #2196F3, #1976D2)',
+                'Metro': 'linear-gradient(145deg, #2196F3, #1976D2)',
+                'RER': 'linear-gradient(145deg, #9C27B0, #7B1FA2)',
+                'Tramway': 'linear-gradient(145deg, #FF9800, #F57C00)',
+                'Tram': 'linear-gradient(145deg, #FF9800, #F57C00)',
+                'Train': 'linear-gradient(145deg, #607D8B, #455A64)'
+            };
+            return colors[mode] || 'linear-gradient(145deg, #757575, #616161)';
+        }
+
+        function showStatus(type, message) {
+            const status = document.getElementById('api-status');
+            status.className = `api-status ${type}`;
+            status.textContent = message;
+        }
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
 </body>
 </html>
