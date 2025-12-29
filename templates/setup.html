@@ -634,15 +634,16 @@
             const result = state.results[index];
             if (!result) return;
 
+            console.log('Selected result:', result);
+
             state.selectedStop = {
                 stop_id: result.stop_id,
-                stop_id_raw: result.stop_id_raw,
                 stop_name: result.stop_name,
                 town: result.town || ''
             };
 
             state.selectedLine = {
-                route_id: result.line_id_raw,
+                line_id: result.line_id,
                 line_name: result.line_name,
                 mode: result.transport_type || 'Bus'
             };
@@ -660,8 +661,13 @@
             const container = document.getElementById('directions');
             container.innerHTML = '<div class="loading-train"><div class="train-animation">🚇</div>Chargement des directions...</div>';
 
+            console.log('Fetching directions for:', {
+                stop_id: result.stop_id,
+                line_id: result.line_id
+            });
+
             try {
-                const res = await fetch(`/api/stop/directions?stop_id=${encodeURIComponent(result.stop_id_raw)}&line_id=${encodeURIComponent(result.line_id_raw)}`);
+                const res = await fetch(`/api/stop/directions?stop_id=${encodeURIComponent(result.stop_id)}&line_id=${encodeURIComponent(result.line_id)}`);
                 const data = await res.json();
                 const directions = data.directions || [];
 
@@ -756,9 +762,9 @@
                 formData.append('direction', state.selectedDirection);
                 formData.append('transport_type', state.selectedLine.mode || 'Bus');
                 
-                // Add line_id if available (route_id)
-                if (state.selectedLine.route_id) {
-                    formData.append('line_id', state.selectedLine.route_id);
+                // Add line_id if available
+                if (state.selectedLine.line_id) {
+                    formData.append('line_id', state.selectedLine.line_id);
                 }
                 
                 // Add direction_id if available
@@ -773,7 +779,7 @@
                     direction: state.selectedDirection,
                     direction_id: state.selectedDirectionId,
                     transport_type: state.selectedLine.mode,
-                    line_id: state.selectedLine.route_id
+                    line_id: state.selectedLine.line_id
                 });
 
                 const saveRes = await fetch('/api/stops/add', {
