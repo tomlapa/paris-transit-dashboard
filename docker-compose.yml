@@ -8,9 +8,9 @@ services:
       - "8080:8080"
     volumes:
       - transit-data:/app/data
-      - ./config.yaml:/app/config.yaml
     environment:
       - TZ=Europe/Paris
+      - CONFIG_PATH=/app/data/config.yaml
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/"]

@@ -14,7 +14,10 @@ class ConfigManager:
     
     def _load_config(self) -> dict:
         """Load configuration from YAML file"""
-        if self.config_path.exists():
+        # Ensure parent directory exists
+        self.config_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        if self.config_path.exists() and self.config_path.is_file():
             with open(self.config_path) as f:
                 return yaml.safe_load(f) or self._default_config()
         return self._default_config()

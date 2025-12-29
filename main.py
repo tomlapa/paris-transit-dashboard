@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import asyncio
 import json
+import os
 from datetime import datetime
 from typing import Dict, List, Optional
 from pathlib import Path
@@ -24,7 +25,8 @@ app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 templates = Jinja2Templates(directory=str(templates_dir))
 
 # Global state
-config_manager = ConfigManager()
+config_path = os.getenv("CONFIG_PATH", "config.yaml")
+config_manager = ConfigManager(config_path)
 idfm_client: Optional[IDFMClient] = None
 current_data: Dict[str, StopDepartures] = {}
 background_task = None
