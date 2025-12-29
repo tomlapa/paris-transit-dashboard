@@ -271,18 +271,32 @@ class IDFMClient:
         """Search stops using local index (built from real-time data perimeter)"""
         results = []
         
-        if not query or len(query) < 2:
+        try:
+            if not query or len(query) < 2:
+                return results
+            
+            # Check if search index is loaded
+            if not self._search_index or not self._search_index.get("search_terms"):
+                print("[SEARCH] Warning: Search index not loaded")
+                return results
+            
+            # Normalize query for accent-insensitive search
+            query_normalized = self._normalize_text(query)
+            matched_stops = set()
+            
+            # Search through index terms (normalized comparison)
+            for term, stop_ids in self._search_index["search_terms"].items():
+                if not isinstance(term, str):
+                    continue
+                term_normalized = self._normalize_text(term)
+                if query_normalized in term_normalized:
+                    matched_stops.update(stop_ids)
+        
+        except Exception as e:
+            print(f"[SEARCH] Error in search: {e}")
+            import traceback
+            traceback.print_exc()
             return results
-        
-        # Normalize query for accent-insensitive search
-        query_normalized = self._normalize_text(query)
-        matched_stops = set()
-        
-        # Search through index terms (normalized comparison)
-        for term, stop_ids in self._search_index["search_terms"].items():
-            term_normalized = self._normalize_text(term)
-            if query_normalized in term_normalized:
-                matched_stops.update(stop_ids)
         
         # Build results from matched stops
         seen = set()
@@ -320,10 +334,15 @@ class IDFMClient:
                 ))
         
         # Sort by relevance (exact matches first, then by stop name)
-        results.sort(key=lambda r: (
-            0 if query_lower == r.stop_name.lower() else 1,
-            r.stop_name.lower()
-        ))
+        try:
+            query_normalized = self._normalize_text(query)
+            results.sort(key=lambda r: (
+                0 if query_normalized == self._normalize_text(r.stop_name) else 1,
+                r.stop_name.lower()
+            ))
+        except:
+            # If sorting fails, just return unsorted
+            pass
         
         return results[:30]
     
