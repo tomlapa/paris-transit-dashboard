@@ -426,8 +426,8 @@ class IDFMClient:
                 dest_names = journey.get("DestinationName", [])
                 direction = dest_names[0].get("value", "") if dest_names else ""
                 
-                # Filter by direction if specified
-                if stop_config.direction:
+                # Filter by direction if specified (skip if "Toutes directions")
+                if stop_config.direction and "toutes directions" not in stop_config.direction.lower():
                     if not self._direction_matches(stop_config.direction, direction):
                         continue
                 
