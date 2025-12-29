@@ -224,15 +224,20 @@ async def validate_api_key(request: Request):
         data = await request.json()
         api_key = data.get('api_key', '').strip()
         
+        print(f"[VALIDATE] Received API key: {api_key[:10]}... (length: {len(api_key)})")
+        
         if not api_key:
+            print("[VALIDATE] Empty key")
             return {"success": False, "message": "Clé API vide"}
         
         if len(api_key) < 20:
+            print(f"[VALIDATE] Key too short: {len(api_key)} chars")
             return {"success": False, "message": "Clé API trop courte (doit faire au moins 20 caractères)"}
         
         # Save key immediately
         config_manager.api_key = api_key
         config_manager.save_config()
+        print(f"[VALIDATE] Key saved successfully")
         
         # Create client (will be tested when fetching real data)
         idfm_client = IDFMClient(api_key)
@@ -242,9 +247,12 @@ async def validate_api_key(request: Request):
             if background_task is None or background_task.done():
                 background_task = asyncio.create_task(fetch_all_stops())
         
-        return {"success": True, "message": "Clé API enregistrée ✓ (sera testée lors de la récupération des données)"}
+        result = {"success": True, "message": "Clé API enregistrée ✓ (sera testée lors de la récupération des données)"}
+        print(f"[VALIDATE] Returning: {result}")
+        return result
         
     except Exception as e:
+        print(f"[VALIDATE] Exception: {e}")
         return {"success": False, "message": f"Erreur: {str(e)}"}
 
 

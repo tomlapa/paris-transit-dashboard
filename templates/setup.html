@@ -542,12 +542,16 @@
                 });
                 const data = await res.json();
                 
+                console.log('Validation response:', data);
+                console.log('Success value:', data.success);
+                console.log('Message:', data.message);
+                
                 if (data.success) {
                     showStatus('valid', '✓ CLÉ API VALIDE ET SAUVEGARDÉE');
                     showToast('CLÉ API VALIDÉE!', 'success');
                 } else {
                     showStatus('invalid', '✗ CLÉ API INVALIDE');
-                    showToast('CLÉ API INVALIDE', 'error');
+                    showToast(data.message || 'CLÉ API INVALIDE', 'error');
                 }
             } catch (e) {
                 console.error('Validation error:', e);
