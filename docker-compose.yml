@@ -10,4 +10,5 @@ services:
       - ./data:/data
     environment:
       - TZ=Europe/Paris
+      - CONFIG_PATH=/data/transit_config.json
     restart: unless-stopped

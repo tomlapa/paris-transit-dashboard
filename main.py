@@ -25,8 +25,11 @@ app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 templates = Jinja2Templates(directory=str(templates_dir))
 
 # Global state
-config_path = Path("/data/config.yaml") if Path("/data").exists() else Path("config.yaml")
-config_manager = ConfigManager(str(config_path))
+config_path = os.getenv('CONFIG_PATH', 
+    '/data/transit_config.json' if Path('/data').exists() and os.access('/data', os.W_OK) 
+    else 'transit_config.json'
+)
+config_manager = ConfigManager(config_path)
 idfm_client: Optional[IDFMClient] = None
 current_data: Dict[str, StopDepartures] = {}
 background_task = None

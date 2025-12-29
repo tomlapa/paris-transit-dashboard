@@ -7,13 +7,17 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application
-COPY . .
+COPY api/ ./api/
+COPY static/ ./static/
+COPY templates/ ./templates/
+COPY main.py .
+COPY transit-config.py .
 
-# Create data directory and set it as working directory for config
+# Create data directory for persistent config
 RUN mkdir -p /data && chmod 777 /data
 
 # Expose port
 EXPOSE 8080
 
-# Run app - config.yaml will be created in /data
+# Run app
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
