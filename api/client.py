@@ -372,10 +372,6 @@ class IDFMClient:
         """Get real-time departures using PRIM stop-monitoring API"""
         now = self._get_paris_time()
         
-        print(f"[DEBUG] Getting departures for: {stop_config.line} at {stop_config.name}")
-        print(f"[DEBUG] Stop ID: {stop_config.id}, Line ID: {stop_config.line_id}")
-        print(f"[DEBUG] Direction filter: {stop_config.direction}")
-        
         try:
             async with httpx.AsyncClient(timeout=15) as client:
                 url = f"{PRIM_BASE_URL}/stop-monitoring"
@@ -384,9 +380,7 @@ class IDFMClient:
                 if stop_config.line_id:
                     params["LineRef"] = stop_config.line_id
                 
-                print(f"[DEBUG] API Request: {url} with params: {params}")
                 response = await client.get(url, headers=self.prim_headers, params=params)
-                print(f"[DEBUG] Response status: {response.status_code}")
                 
                 if response.status_code == 400:
                     return StopDepartures(
@@ -405,8 +399,6 @@ class IDFMClient:
                 
                 data = response.json()
                 departures = self._parse_departures(data, stop_config)
-                
-                print(f"[DEBUG] Parsed {len(departures)} departures")
                 
                 return StopDepartures(
                     stop_id=stop_config.id, stop_name=stop_config.name,
@@ -608,12 +600,7 @@ class IDFMClient:
                 url = f"{PRIM_BASE_URL}/stop-monitoring"
                 params = {"MonitoringRef": "STIF:StopPoint:Q:473921:"}
                 
-                print(f"[DEBUG] Testing API key: {self.api_key[:10]}...")
-                print(f"[DEBUG] URL: {url}")
-                
                 response = await client.get(url, headers=self.prim_headers, params=params)
-                
-                print(f"[DEBUG] Response status: {response.status_code}")
                 
                 if response.status_code == 200:
                     data = response.json()
@@ -622,7 +609,6 @@ class IDFMClient:
                     if isinstance(data, dict) and "rate limit" in str(data.get("message", "")).lower():
                         return {"success": False, "message": "API rate limit exceeded"}
                     
-                    print(f"[DEBUG] Response has 'Siri': {'Siri' in data}")
                     if "Siri" in data:
                         return {"success": True, "message": "API connectée ✓"}
                     return {"success": False, "message": "Réponse invalide"}
@@ -633,8 +619,6 @@ class IDFMClient:
                 else:
                     return {"success": False, "message": f"Erreur {response.status_code}"}
         except httpx.TimeoutException:
-            print(f"[DEBUG] Timeout exception")
             return {"success": False, "message": "Timeout"}
         except Exception as e:
-            print(f"[DEBUG] Exception: {type(e).__name__}: {str(e)}")
             return {"success": False, "message": str(e)}
