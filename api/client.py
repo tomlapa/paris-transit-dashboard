@@ -1,6 +1,7 @@
 import httpx
 import os
 import unicodedata
+import logging
 from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any, Tuple
 from .models import Departure, StopDepartures, StopConfig, SearchResult
@@ -9,6 +10,10 @@ import json
 import asyncio
 import re
 import math
+from cachetools import TTLCache
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 # Paris timezone
 PARIS_TZ = pytz.timezone('Europe/Paris')
@@ -39,8 +44,13 @@ class IDFMClient:
     - PRIM API (with apikey): Real-time departures via stop-monitoring
     - Local search index: Pre-built from real-time data perimeter CSV
     - French Address API (no auth): Geocoding addresses
+
+    Optimized for Raspberry Pi with:
+    - Connection pooling (reused HTTP client)
+    - TTL-based caching (20 second cache for departures)
+    - Exponential backoff for retries
     """
-    
+
     def __init__(self, api_key: str):
         self.api_key = api_key
         self.prim_headers = {
@@ -49,6 +59,15 @@ class IDFMClient:
         }
         # Load local search index
         self._search_index = self._load_search_index()
+
+        # HTTP connection pool for reusing connections
+        self._http_client = httpx.AsyncClient(
+            timeout=15.0,
+            limits=httpx.Limits(max_keepalive_connections=10, max_connections=20)
+        )
+
+        # TTL cache for departures (20 second cache, max 100 entries)
+        self._departures_cache = TTLCache(maxsize=100, ttl=20)
     
     def _load_search_index(self) -> Dict:
         """Load pre-built search index from JSON"""
@@ -57,9 +76,8 @@ class IDFMClient:
             with open(index_path, 'r', encoding='utf-8') as f:
                 return json.load(f)
         except Exception as e:
-            print(f"Warning: Could not load search index: {e}")
+            logger.warning(f"Could not load search index: {e}")
             return {"stops": {}, "search_terms": {}}
-        self._cache_time: Optional[datetime] = None
     
     def _get_paris_time(self) -> datetime:
         return datetime.now(PARIS_TZ)
@@ -118,8 +136,8 @@ class IDFMClient:
                             "type": props.get("type", "")
                         })
         except Exception as e:
-            print(f"Address search error: {e}")
-        
+            logger.error(f"Address search error: {e}")
+
         return results
     
     async def find_stops_near(self, lat: float, lon: float, radius_m: int = 500) -> List[Dict[str, Any]]:
@@ -158,7 +176,7 @@ class IDFMClient:
                         
                 except Exception as e:
                     # Strategy 2: Fallback to wider area search
-                    print(f"Geo query failed, using fallback: {e}")
+                    logger.debug(f"Geo query failed, using fallback: {e}")
                     
                     # Get larger dataset and filter in Python
                     params = {
@@ -210,8 +228,8 @@ class IDFMClient:
                 stops = sorted(seen_stops.values(), key=lambda x: x["distance"])
         
         except Exception as e:
-            print(f"Find stops near error: {e}")
-        
+            logger.error(f"Find stops near error: {e}")
+
         return stops[:20]
     
     async def get_lines_at_stop(self, stop_id_raw: str) -> List[Dict[str, Any]]:
@@ -253,8 +271,8 @@ class IDFMClient:
                             "operator": record.get("operatorname", "")
                         })
         except Exception as e:
-            print(f"Get lines at stop error: {e}")
-        
+            logger.error(f"Get lines at stop error: {e}")
+
         return lines
     
     # ==================== STOP SEARCH (legacy) ====================
@@ -277,7 +295,7 @@ class IDFMClient:
             
             # Check if search index is loaded
             if not self._search_index or not self._search_index.get("search_terms"):
-                print("[SEARCH] Warning: Search index not loaded")
+                logger.warning("Search index not loaded")
                 return results
             
             # Normalize query for accent-insensitive search
@@ -293,9 +311,7 @@ class IDFMClient:
                     matched_stops.update(stop_ids)
         
         except Exception as e:
-            print(f"[SEARCH] Error in search: {e}")
-            import traceback
-            traceback.print_exc()
+            logger.error(f"Error in search: {e}", exc_info=True)
             return results
         
         # Build results from matched stops
@@ -392,74 +408,119 @@ class IDFMClient:
                             "town": town
                         })
         except Exception as e:
-            print(f"Line search error: {e}")
-        
+            logger.error(f"Line search error: {e}")
+
         return results[:50]
     
     # ==================== REAL-TIME DATA ====================
     
     async def get_departures(self, stop_config: StopConfig) -> StopDepartures:
-        """Get real-time departures using PRIM stop-monitoring API"""
+        """
+        Get real-time departures using PRIM stop-monitoring API
+        Uses TTL cache to reduce API calls (20s cache)
+        Implements exponential backoff for retries
+        """
         now = self._get_paris_time()
-        
-        try:
-            async with httpx.AsyncClient(timeout=15) as client:
+
+        # Check cache first
+        cache_key = f"{stop_config.id}:{stop_config.direction or ''}:{stop_config.line_id or ''}"
+        if cache_key in self._departures_cache:
+            logger.debug(f"Cache hit for {stop_config.name}")
+            return self._departures_cache[cache_key]
+
+        # Exponential backoff retry logic
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
                 url = f"{PRIM_BASE_URL}/stop-monitoring"
                 params = {"MonitoringRef": stop_config.id}
-                
+
                 if stop_config.line_id:
                     params["LineRef"] = stop_config.line_id
-                
-                response = await client.get(url, headers=self.prim_headers, params=params)
-                
+
+                response = await self._http_client.get(url, headers=self.prim_headers, params=params)
+
+                if response.status_code == 429:
+                    # Rate limited - wait and retry
+                    wait_time = 2 ** attempt  # 1s, 2s, 4s
+                    logger.warning(f"Rate limited, waiting {wait_time}s before retry")
+                    await asyncio.sleep(wait_time)
+                    continue
+
                 if response.status_code == 400:
-                    return StopDepartures(
+                    result = StopDepartures(
                         stop_id=stop_config.id, stop_name=stop_config.name,
                         line=stop_config.line, line_id=stop_config.line_id,
                         direction=stop_config.direction, last_updated=now,
                         departures=[], error="Arrêt inconnu"
                     )
+                    # Cache error responses too to avoid hammering API
+                    self._departures_cache[cache_key] = result
+                    return result
+
                 elif response.status_code != 200:
-                    return StopDepartures(
+                    if attempt < max_retries - 1:
+                        wait_time = 2 ** attempt
+                        logger.warning(f"HTTP {response.status_code}, retrying in {wait_time}s")
+                        await asyncio.sleep(wait_time)
+                        continue
+                    result = StopDepartures(
                         stop_id=stop_config.id, stop_name=stop_config.name,
                         line=stop_config.line, line_id=stop_config.line_id,
                         direction=stop_config.direction, last_updated=now,
                         departures=[], error=f"Erreur {response.status_code}"
                     )
-                
+                    self._departures_cache[cache_key] = result
+                    return result
+
                 data = response.json()
                 departures = self._parse_departures(data, stop_config)
-                
-                return StopDepartures(
+
+                result = StopDepartures(
                     stop_id=stop_config.id, stop_name=stop_config.name,
                     line=stop_config.line, line_id=stop_config.line_id,
                     direction=stop_config.direction, last_updated=now,
                     departures=departures
                 )
-                
-        except httpx.TimeoutException:
-            return StopDepartures(
-                stop_id=stop_config.id, stop_name=stop_config.name,
-                line=stop_config.line, direction=stop_config.direction,
-                last_updated=now, departures=[], error="Timeout"
-            )
-        except Exception as e:
-            return StopDepartures(
-                stop_id=stop_config.id, stop_name=stop_config.name,
-                line=stop_config.line, direction=stop_config.direction,
-                last_updated=now, departures=[], error=str(e)
-            )
+
+                # Cache successful result
+                self._departures_cache[cache_key] = result
+                logger.debug(f"Fetched and cached {len(departures)} departures for {stop_config.name}")
+                return result
+
+            except httpx.TimeoutException:
+                if attempt < max_retries - 1:
+                    wait_time = 2 ** attempt
+                    logger.warning(f"Timeout, retrying in {wait_time}s")
+                    await asyncio.sleep(wait_time)
+                    continue
+                return StopDepartures(
+                    stop_id=stop_config.id, stop_name=stop_config.name,
+                    line=stop_config.line, direction=stop_config.direction,
+                    last_updated=now, departures=[], error="Timeout"
+                )
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    wait_time = 2 ** attempt
+                    logger.error(f"Error fetching departures: {e}, retrying in {wait_time}s")
+                    await asyncio.sleep(wait_time)
+                    continue
+                return StopDepartures(
+                    stop_id=stop_config.id, stop_name=stop_config.name,
+                    line=stop_config.line, direction=stop_config.direction,
+                    last_updated=now, departures=[], error=str(e)
+                )
     
     def _parse_departures(self, data: dict, stop_config: StopConfig) -> List[Departure]:
         departures = []
         try:
             delivery = data.get("Siri", {}).get("ServiceDelivery", {}).get("StopMonitoringDelivery", [])
             if not delivery:
-                print(f"[DEBUG] No StopMonitoringDelivery in response")
+                logger.debug("No StopMonitoringDelivery in response")
                 return departures
-            
+
             visits = delivery[0].get("MonitoredStopVisit", [])
-            print(f"[DEBUG] Found {len(visits)} monitored visits")
+            logger.debug(f"Found {len(visits)} monitored visits")
             
             for visit in visits:
                 journey = visit.get("MonitoredVehicleJourney", {})
@@ -470,20 +531,20 @@ class IDFMClient:
                 
                 dest_names = journey.get("DestinationName", [])
                 direction = dest_names[0].get("value", "") if dest_names else ""
-                
-                print(f"[DEBUG] Visit: line={line_name}, direction={direction}")
-                
+
+                logger.debug(f"Visit: line={line_name}, direction={direction}")
+
                 # Filter by direction if specified (skip if "Toutes directions")
                 if stop_config.direction and "toutes directions" not in stop_config.direction.lower():
                     if not self._direction_matches(stop_config.direction, direction):
-                        print(f"[DEBUG] Filtered out: {direction} doesn't match {stop_config.direction}")
+                        logger.debug(f"Filtered out: {direction} doesn't match {stop_config.direction}")
                         continue
                 
                 aimed_time = call.get("AimedDepartureTime") or call.get("AimedArrivalTime", "")
                 expected_time = call.get("ExpectedDepartureTime") or call.get("ExpectedArrivalTime", "")
-                
+
                 if not aimed_time and not expected_time:
-                    print(f"[DEBUG] No time data for this visit")
+                    logger.debug("No time data for this visit")
                     continue
                 
                 scheduled = self._parse_idfm_time(aimed_time or expected_time)
@@ -506,11 +567,12 @@ class IDFMClient:
                     delay_minutes=delay_minutes, status=status,
                     is_realtime=bool(expected_time)
                 ))
-            
+
+
             departures.sort(key=lambda d: d.expected)
             return departures[:6]
         except Exception as e:
-            print(f"Parse error: {e}")
+            logger.error(f"Parse error: {e}")
             return departures
     
     async def get_stop_directions(self, stop_id: str, line_id: str = None) -> List[Dict[str, Any]]:
@@ -554,8 +616,8 @@ class IDFMClient:
                                         "line_name": line_name
                                     })
         except Exception as e:
-            print(f"Get directions error: {e}")
-        
+            logger.error(f"Get directions error: {e}")
+
         return directions
     
     # ==================== HELPERS ====================

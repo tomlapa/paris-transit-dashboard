@@ -5,6 +5,8 @@ from fastapi.templating import Jinja2Templates
 import asyncio
 import json
 import os
+import logging
+import hashlib
 from datetime import datetime
 from typing import Dict, List, Optional
 from pathlib import Path
@@ -13,6 +15,13 @@ import pytz
 from api.client import IDFMClient, PARIS_TZ
 from api.config import ConfigManager
 from api.models import StopConfig, StopDepartures
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 # Initialize app
 app = FastAPI(title="Paris Transit Dashboard")
@@ -49,44 +58,63 @@ def paris_now() -> datetime:
 
 
 async def fetch_all_stops():
-    """Background task to continuously refresh transit data"""
+    """Background task to continuously refresh transit data with parallel fetching"""
     global current_data
-    
-    print(f"[FETCH] Background task started")
-    
+
+    logger.info("Background task started")
+
     while True:
         client = get_client()
         if client and config_manager.stops:
-            print(f"[{paris_now().strftime('%H:%M:%S')}] Fetching transit data for {len(config_manager.stops)} stops...")
-            
-            for stop_config in config_manager.stops:
-                try:
-                    key = f"{stop_config.id}:{stop_config.direction or ''}"
-                    print(f"  Fetching {stop_config.name} (key: {key})...")
-                    departures = await client.get_departures(stop_config)
-                    current_data[key] = departures
-                    print(f"  ✓ Got {len(departures.departures)} departures for {stop_config.name}")
-                except Exception as e:
-                    print(f"  ✗ Error fetching {stop_config.name}: {e}")
-            
-            print(f"  ✓ Updated {len(config_manager.stops)} stops. Current data keys: {list(current_data.keys())}")
+            logger.info(f"Fetching transit data for {len(config_manager.stops)} stops...")
+
+            # Fetch all stops in parallel using asyncio.gather()
+            tasks = [
+                client.get_departures(stop_config)
+                for stop_config in config_manager.stops
+            ]
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+
+            # Build new data dictionary
+            new_data = {}
+            for stop_config, result in zip(config_manager.stops, results):
+                key = f"{stop_config.id}:{stop_config.direction or ''}"
+                if isinstance(result, Exception):
+                    logger.error(f"Error fetching {stop_config.name}: {result}")
+                else:
+                    new_data[key] = result
+                    logger.debug(f"Got {len(result.departures)} departures for {stop_config.name}")
+
+            # Replace old data to prevent memory leak
+            current_data = new_data
+            logger.info(f"Updated {len(new_data)} stops successfully")
         else:
-            print(f"[FETCH] Waiting... client={client is not None}, stops={len(config_manager.stops) if config_manager.stops else 0}")
-        
+            logger.debug(f"Waiting... client={client is not None}, stops={len(config_manager.stops) if config_manager.stops else 0}")
+
         await asyncio.sleep(config_manager.refresh_interval)
+
+
+async def supervised_fetch_task():
+    """Supervisor that auto-restarts fetch task on failure"""
+    while True:
+        try:
+            await fetch_all_stops()
+        except Exception as e:
+            logger.error(f"Background task crashed: {e}, restarting in 5s...")
+            await asyncio.sleep(5)
 
 
 @app.on_event("startup")
 async def startup():
     """Start background refresh task on app startup"""
     global background_task
-    print("🚀 Transit Dashboard starting...")
-    
+    logger.info("Transit Dashboard starting...")
+
     if config_manager.is_configured():
-        print(f"📍 Monitoring {len(config_manager.stops)} stops")
-        background_task = asyncio.create_task(fetch_all_stops())
+        logger.info(f"Monitoring {len(config_manager.stops)} stops")
+        background_task = asyncio.create_task(supervised_fetch_task())
     else:
-        print("⚠️  Dashboard not configured - visit /setup or /admin")
+        logger.warning("Dashboard not configured - visit /setup or /admin")
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -127,17 +155,13 @@ async def admin_page(request: Request):
 async def get_departures():
     """Get current departure data for all configured stops"""
     stops_data = []
-    
-    print(f"[GET_DEPARTURES] Called. Config has {len(config_manager.stops)} stops")
-    print(f"[GET_DEPARTURES] current_data has {len(current_data)} keys: {list(current_data.keys())}")
-    
+
+    logger.debug(f"Fetching departures for {len(config_manager.stops)} configured stops")
+
     for i, stop_config in enumerate(config_manager.stops):
         key = f"{stop_config.id}:{stop_config.direction or ''}"
-        print(f"[GET_DEPARTURES] Stop {i}: Looking for key '{key}'")
-        print(f"[GET_DEPARTURES]   Stop config: id={stop_config.id}, name={stop_config.name}, direction={stop_config.direction}")
-        
+
         if key in current_data:
-            print(f"[GET_DEPARTURES]   ✓ Found data for key '{key}'")
             data = current_data[key]
             stops_data.append({
                 "index": i,
@@ -163,7 +187,7 @@ async def get_departures():
                 "error": data.error
             })
         else:
-            print(f"[GET_DEPARTURES]   ✗ Key '{key}' NOT FOUND in current_data")
+            logger.debug(f"No data available yet for {stop_config.name}")
             stops_data.append({
                 "index": i,
                 "id": stop_config.id,
@@ -174,7 +198,7 @@ async def get_departures():
                 "departures": [],
                 "error": "En attente de données..."
             })
-    
+
     return {
         "timestamp": paris_now().isoformat(),
         "paris_time": paris_now().strftime("%H:%M:%S"),
@@ -185,18 +209,28 @@ async def get_departures():
 
 @app.get("/events")
 async def events():
-    """Server-Sent Events endpoint for real-time updates"""
+    """Server-Sent Events endpoint for real-time updates (optimized)"""
     async def event_stream():
+        last_hash = None
         while True:
             try:
                 data = await get_departures()
                 event_data = json.dumps(data, default=str)
-                yield f"data: {event_data}\n\n"
+
+                # Only push if data actually changed
+                current_hash = hashlib.md5(event_data.encode()).hexdigest()
+                if current_hash != last_hash:
+                    yield f"data: {event_data}\n\n"
+                    last_hash = current_hash
+                    logger.debug("SSE: Data changed, pushed update")
+                else:
+                    logger.debug("SSE: No changes, skipping push")
             except Exception as e:
-                print(f"SSE error: {e}")
-            
-            await asyncio.sleep(5)
-    
+                logger.error(f"SSE error: {e}")
+
+            # Increased interval to reduce CPU usage on Raspberry Pi
+            await asyncio.sleep(15)
+
     return StreamingResponse(
         event_stream(),
         media_type="text/event-stream",
@@ -232,62 +266,62 @@ async def set_api_key(api_key: str = Form(...)):
 async def validate_api_key(request: Request):
     """Validate and save API key"""
     global idfm_client, background_task
-    
+
     try:
         data = await request.json()
         api_key = data.get('api_key', '').strip()
-        
-        print(f"[VALIDATE] Received API key: {api_key[:10]}... (length: {len(api_key)})")
-        
+
+        logger.info("Validating API key")
+
         if not api_key:
-            print("[VALIDATE] Empty key")
+            logger.warning("Empty API key provided")
             return {"success": False, "message": "Clé API vide"}
-        
+
         if len(api_key) < 20:
-            print(f"[VALIDATE] Key too short: {len(api_key)} chars")
+            logger.warning(f"API key too short: {len(api_key)} chars")
             return {"success": False, "message": "Clé API trop courte (doit faire au moins 20 caractères)"}
-        
+
         # Create client and test connection
         idfm_client = IDFMClient(api_key)
         result = await idfm_client.test_connection()
-        
-        print(f"[VALIDATE] Test result: {result}")
-        
+
+        logger.info(f"API validation result: {result.get('success', False)}")
+
         # If rate limited, save anyway and warn user
         if not result["success"] and "rate limit" in result.get("message", "").lower():
-            print("[VALIDATE] Rate limited - saving key anyway")
+            logger.warning("Rate limited during validation - saving key anyway")
             config_manager.api_key = api_key
             config_manager.save()
-            
+
             # Start background task if stops are configured
             if config_manager.stops:
                 if background_task is None or background_task.done():
-                    background_task = asyncio.create_task(fetch_all_stops())
-            
+                    background_task = asyncio.create_task(supervised_fetch_task())
+
             return {
-                "success": True, 
+                "success": True,
                 "message": "⚠️ Rate limit atteint - clé enregistrée (sera testée lors de la récupération des données)"
             }
-        
+
         # If validation failed for other reasons, don't save
         if not result["success"]:
-            print(f"[VALIDATE] Validation failed: {result['message']}")
+            logger.error(f"API validation failed: {result.get('message', 'Unknown error')}")
             return result
-        
+
         # Success - save the key
         config_manager.api_key = api_key
         config_manager.save()
-        print(f"[VALIDATE] Key saved successfully")
-        
+        logger.info("API key validated and saved successfully")
+
         # Start background task if stops are configured
         if config_manager.stops:
             if background_task is None or background_task.done():
-                background_task = asyncio.create_task(fetch_all_stops())
-        
+                background_task = asyncio.create_task(supervised_fetch_task())
+
         return {"success": True, "message": "✓ Clé API validée et enregistrée"}
-        
+
     except Exception as e:
-        print(f"[VALIDATE] Exception: {e}")
+        logger.error(f"Exception during API key validation: {e}")
         return {"success": False, "message": f"Erreur: {str(e)}"}
 
 
@@ -378,7 +412,7 @@ async def add_stop(
 ):
     """Add a new stop to monitoring"""
     global background_task
-    
+
     stop = StopConfig(
         id=stop_id,
         name=stop_name,
@@ -388,20 +422,20 @@ async def add_stop(
         direction_id=direction_id,
         transport_type=transport_type
     )
-    
+
     success = config_manager.add_stop(stop)
-    
+
     if success:
         # Restart background task to fetch new stop
-        print(f"[ADD_STOP] Stop added, restarting background task")
+        logger.info(f"Stop added: {stop_name}, restarting background task")
         if background_task and not background_task.done():
             background_task.cancel()
             try:
                 await background_task
             except asyncio.CancelledError:
                 pass
-        background_task = asyncio.create_task(fetch_all_stops())
-        
+        background_task = asyncio.create_task(supervised_fetch_task())
+
         return {"success": True, "message": f"Arrêt {stop_name} ajouté"}
     else:
         return {"success": False, "message": "Cet arrêt existe déjà"}
@@ -410,26 +444,23 @@ async def add_stop(
 @app.post("/api/stops/remove")
 async def remove_stop(stop_id: str = Form(...), direction: str = Form(None)):
     """Remove a stop from monitoring"""
-    global background_task
-    
+    global background_task, current_data
+
     success = config_manager.remove_stop(stop_id, direction)
-    
+
     if success:
-        # Clean up cached data
-        key = f"{stop_id}:{direction or ''}"
-        if key in current_data:
-            del current_data[key]
-        
+        # Clean up cached data (this happens automatically now with new_data replacement)
+        logger.info(f"Stop removed: {stop_id}, restarting background task")
+
         # Restart background task
-        print(f"[REMOVE_STOP] Stop removed, restarting background task")
         if background_task and not background_task.done():
             background_task.cancel()
             try:
                 await background_task
             except asyncio.CancelledError:
                 pass
-        background_task = asyncio.create_task(fetch_all_stops())
-        
+        background_task = asyncio.create_task(supervised_fetch_task())
+
         return {"success": True}
     return {"success": False, "message": "Arrêt non trouvé"}
 
@@ -464,11 +495,30 @@ async def set_refresh_interval(interval: int = Form(...)):
 
 @app.get("/health")
 async def health():
-    """Health check endpoint"""
+    """Health check endpoint with actual status monitoring"""
+    global background_task
+
+    # Check if background task is actually running
+    task_running = background_task is not None and not background_task.done()
+    has_data = len(current_data) > 0
+    is_configured = config_manager.is_configured()
+
+    # Determine overall status
+    if is_configured and task_running and has_data:
+        status = "healthy"
+    elif is_configured and task_running:
+        status = "starting"
+    elif is_configured and not task_running:
+        status = "degraded"
+    else:
+        status = "unconfigured"
+
     return {
-        "status": "ok",
-        "configured": config_manager.is_configured(),
-        "stops_count": len(config_manager.stops),
+        "status": status,
+        "configured": is_configured,
+        "background_task_running": task_running,
+        "stops_configured": len(config_manager.stops),
+        "stops_with_data": len(current_data),
         "paris_time": paris_now().strftime("%H:%M:%S")
     }
 
